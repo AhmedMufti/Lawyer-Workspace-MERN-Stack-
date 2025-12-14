@@ -1,0 +1,44 @@
+{
+    "welcome": "Welcome to Pakistan Legal Nexus",
+    "auth": {
+        "login": "Login",
+        "register": "Register",
+        "logout": "Logout",
+        "email": "Email",
+        "password": "Password"
+    },
+    "cases": {
+        "title": "Cases",
+        "create": "Create Case",
+        "manage": "Manage Cases",
+        "details": "Case Details"
+    },
+    "research": {
+        "acts": "Acts & Legislation",
+        "caseLaws": "Case Laws",
+        "forms": "Court Forms"
+    },
+    "marketplace": {
+        "title": "Marketplace",
+        "lawyers": "Find Lawyers",
+        "items": "Browse Items"
+    },
+    "chat": {
+        "rooms": "Chat Rooms",
+        "send": "Send Message"
+    },
+    "polls": {
+        "title": "Polls & Elections",
+        "vote": "Cast Vote",
+        "results": "View Results"
+    },
+    "common": {
+        "search": "Search",
+        "filter": "Filter",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "submit": "Submit"
+    }
+}
