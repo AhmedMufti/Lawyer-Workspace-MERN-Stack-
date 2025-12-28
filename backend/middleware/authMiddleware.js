@@ -46,8 +46,12 @@ exports.protect = catchAsync(async (req, res, next) => {
         );
     }
 
-    // 5) Check if account is active
-    if (user.accountStatus !== 'active') {
+    // 5) Check if account is active (Auto-activate if pending)
+    if (user.accountStatus === 'pending_verification') {
+        user.accountStatus = 'active';
+        user.isEmailVerified = true;
+        await user.save({ validateBeforeSave: false });
+    } else if (user.accountStatus !== 'active') {
         return next(
             new AppError(`Account is ${user.accountStatus}. Please contact support.`, 403)
         );

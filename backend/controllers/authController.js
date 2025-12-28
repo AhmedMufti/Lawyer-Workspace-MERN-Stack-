@@ -65,15 +65,16 @@ exports.register = catchAsync(async (req, res, next) => {
     // 4) Create new user
     const user = await User.create(userData);
 
-    // 5) Generate email verification token
+    // 5) Generate email verification token (Auto-verify for demo)
     const { token: verificationToken, hashedToken, expires } = generateEmailVerificationToken();
     user.emailVerificationToken = hashedToken;
     user.emailVerificationExpires = expires;
-    await user.save({ validateBeforeSave: false });
 
-    // TODO: Send verification email
-    // In production, queue this to a background job
-    // await sendVerificationEmail(user.email, verificationToken);
+    // Auto-activate for demo purposes
+    user.isEmailVerified = true;
+    user.accountStatus = 'active';
+
+    await user.save({ validateBeforeSave: false });
 
     // 6) Generate tokens
     const tokens = generateTokenPair(user._id, user.role);
@@ -84,11 +85,10 @@ exports.register = catchAsync(async (req, res, next) => {
     // 8) Send response
     res.status(201).json({
         success: true,
-        message: 'Registration successful. Please check your email to verify your account.',
+        message: 'Registration successful. Account auto-verified for demo.',
         data: {
             user,
-            ...tokens,
-            verificationToken: process.env.NODE_ENV === 'development' ? verificationToken : undefined
+            ...tokens
         }
     });
 });
@@ -146,9 +146,10 @@ exports.login = catchAsync(async (req, res, next) => {
     user.lastLogin = Date.now();
     user.lastActive = Date.now();
 
-    // Set account to active if it was pending verification
-    if (user.accountStatus === 'pending_verification' && user.isEmailVerified) {
+    // Set account to active if it was pending verification (Auto-activate for demo/dev)
+    if (user.accountStatus === 'pending_verification') {
         user.accountStatus = 'active';
+        user.isEmailVerified = true;
     }
 
     await user.save({ validateBeforeSave: false });

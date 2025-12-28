@@ -38,17 +38,48 @@ const CasesPage = () => {
 
     const [formData, setFormData] = useState(initialFormState);
 
+    const [validationError, setValidationError] = useState(null);
+
     useEffect(() => {
         dispatch(fetchCases({ page: 1, limit: 20 }));
     }, [dispatch]);
 
+    const validateForm = () => {
+        const errors = [];
+
+        // Basic Info
+        if (!formData.caseNumber) errors.push({ tab: 'basic', msg: 'Case Number is required' });
+        if (!formData.caseTitle) errors.push({ tab: 'basic', msg: 'Case Title is required' });
+        if (!formData.filingDate) errors.push({ tab: 'basic', msg: 'Filing Date is required' });
+
+        // Court Details
+        if (!formData.court.name) errors.push({ tab: 'court', msg: 'Court Name is required' });
+        if (!formData.court.city) errors.push({ tab: 'court', msg: 'Court City is required' });
+
+        // Parties
+        if (!formData.petitioner.name) errors.push({ tab: 'parties', msg: 'Petitioner Name is required' });
+        if (!formData.respondent.name) errors.push({ tab: 'parties', msg: 'Respondent Name is required' });
+
+        return errors;
+    };
+
     const handleCreate = async (e) => {
         e.preventDefault();
+        setValidationError(null);
+
+        const errors = validateForm();
+        if (errors.length > 0) {
+            setValidationError(errors[0].msg);
+            setActiveTab(errors[0].tab); // Switch to the tab with the error
+            return;
+        }
+
         const result = await dispatch(createCase(formData));
         if (createCase.fulfilled.match(result)) {
             setShowModal(false);
             setFormData(initialFormState);
             setActiveTab('basic');
+            setValidationError(null);
         }
     };
 
@@ -61,6 +92,7 @@ const CasesPage = () => {
         } else {
             setFormData(prev => ({ ...prev, [field]: value }));
         }
+        if (validationError) setValidationError(null); // Clear error on change
     };
 
     const tabs = [
@@ -144,6 +176,12 @@ const CasesPage = () => {
                                 <h2>Create New Case</h2>
                                 <button onClick={() => setShowModal(false)} className="close-btn">&times;</button>
                             </div>
+
+                            {validationError && (
+                                <div className="alert alert-error" style={{ margin: '0 1.5rem 1rem' }}>
+                                    ⚠️ {validationError}
+                                </div>
+                            )}
 
                             <div className="modal-tabs">
                                 {tabs.map(tab => (

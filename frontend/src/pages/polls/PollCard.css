@@ -1,0 +1,109 @@
+.poll-card {
+    background: var(--bg-card, #1e293b);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 2rem;
+}
+
+.poll-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.poll-header h3 {
+    margin: 0;
+    color: var(--text-primary, #f8fafc);
+    font-size: 1.25rem;
+}
+
+.poll-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.poll-status.active {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+.poll-status.closed {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.poll-description {
+    color: var(--text-secondary, #94a3b8);
+    margin-bottom: 1.5rem;
+}
+
+.poll-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.poll-option {
+    position: relative;
+}
+
+.vote-btn {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    color: var(--text-primary, #f8fafc);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.vote-btn:hover:not(:disabled) {
+    border-color: var(--primary, #3b82f6);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.vote-btn:disabled {
+    cursor: default;
+    opacity: 0.8;
+}
+
+.option-text {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+}
+
+.progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background: rgba(59, 130, 246, 0.2);
+    z-index: 1;
+    transition: width 0.5s ease;
+}
+
+.poll-footer {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-secondary, #64748b);
+    font-size: 0.9rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vote-count {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}

@@ -59,7 +59,8 @@ router.post(
  */
 
 // Logout
-router.post('/logout', protect, authController.logout);
+// Logout (Public to allow clearing cookies even if token expired)
+router.post('/logout', authController.logout);
 
 // Change password
 router.post(

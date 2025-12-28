@@ -1,0 +1,125 @@
+.listing-card {
+    background: var(--bg-card, #1e293b);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.listing-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-color: var(--primary, #3b82f6);
+}
+
+.listing-image {
+    height: 180px;
+    background: var(--bg-dark, #0f172a);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.listing-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholder-image {
+    font-size: 3rem;
+    color: var(--text-secondary, #64748b);
+}
+
+.listing-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--success, #10b981);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.listing-category {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+}
+
+.listing-content {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.listing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.listing-title {
+    font-size: 1.1rem;
+    margin: 0;
+    color: var(--text-primary, #f8fafc);
+    font-weight: 600;
+    line-height: 1.4;
+    flex: 1;
+    padding-right: 0.5rem;
+}
+
+.listing-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary, #3b82f6);
+    white-space: nowrap;
+}
+
+.listing-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #94a3b8);
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.listing-description {
+    color: var(--text-secondary, #94a3b8);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+    flex: 1;
+}
+
+.listing-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: auto;
+}
+
+.listing-actions .btn {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}

@@ -140,6 +140,10 @@ const DashboardPage = () => {
                                     <span className="action-icon">💬</span>
                                     <span className="action-text">Chat Rooms</span>
                                 </Link>
+                                <Link to="/dashboard/polls" className="action-btn">
+                                    <span className="action-icon">📊</span>
+                                    <span className="action-text">Polls & Elections</span>
+                                </Link>
                             </div>
                         </div>
                     </div>

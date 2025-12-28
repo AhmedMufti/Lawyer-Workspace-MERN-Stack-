@@ -7,6 +7,9 @@ i18n
         resources: {
             en: {
                 translation: require('./locales/en/translation.json')
+            },
+            ur: {
+                translation: require('./locales/ur/translation.json')
             }
         },
         lng: 'en',
