@@ -155,12 +155,18 @@ pollSchema.methods.calculatePercentages = function () {
 };
 
 // Auto-close expired polls
-pollSchema.pre('find', function (next) {
-    const now = new Date();
-    this.updateMany(
-        { endDate: { $lt: now }, status: 'Active' },
-        { $set: { status: 'Closed' } }
-    );
+pollSchema.pre('find', async function (next) {
+    try {
+        const now = new Date();
+        // Use this.model to access the model constructor from the query instance
+        // and await the execution ensures it runs before the find results are returned
+        await this.model.updateMany(
+            { endDate: { $lt: now }, status: 'Active' },
+            { $set: { status: 'Closed' } }
+        );
+    } catch (error) {
+        console.error('Error auto-closing polls:', error);
+    }
     next();
 });
 

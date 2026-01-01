@@ -202,8 +202,14 @@ actSchema.methods.incrementDownloadCount = async function () {
 
 // Static method to search acts
 actSchema.statics.searchActs = function (query, filters = {}) {
+    const searchRegex = new RegExp(query, 'i');
     const searchQuery = {
-        $text: { $search: query },
+        $or: [
+            { title: searchRegex },
+            { shortTitle: searchRegex },
+            { keywords: searchRegex },
+            { fullText: searchRegex }
+        ],
         isDeleted: false
     };
 
@@ -213,8 +219,7 @@ actSchema.statics.searchActs = function (query, filters = {}) {
     if (filters.jurisdiction) searchQuery.jurisdiction = filters.jurisdiction;
     if (filters.status) searchQuery.status = filters.status;
 
-    return this.find(searchQuery, { score: { $meta: 'textScore' } })
-        .sort({ score: { $meta: 'textScore' } });
+    return this.find(searchQuery).sort({ year: -1 });
 };
 
 // Static method to find by category

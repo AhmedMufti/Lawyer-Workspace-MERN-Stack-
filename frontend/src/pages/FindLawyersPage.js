@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaSearch, FaMapMarkerAlt, FaStar, FaBriefcase, FaUniversity, FaPhone } from 'react-icons/fa';
 import './FindLawyersPage.css';
 
 const FindLawyersPage = () => {
+    const navigate = useNavigate();
     const [lawyers, setLawyers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -113,7 +115,7 @@ const FindLawyersPage = () => {
                                             <span>{lawyer.rating || 'New'}</span>
                                             <span className="review-count">({lawyer.reviewCount || 0} reviews)</span>
                                         </div>
-                                        <button className="btn btn-outline btn-sm">View Profile</button>
+                                        <button onClick={() => navigate(`/lawyer/${lawyer._id}`)} className="btn btn-outline btn-sm">View Profile</button>
                                     </div>
                                 </div>
                             ))

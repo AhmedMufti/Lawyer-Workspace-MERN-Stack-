@@ -213,8 +213,15 @@ courtFormSchema.methods.incrementDownloadCount = async function () {
 
 // Static methods
 courtFormSchema.statics.searchForms = function (query, category = null) {
+    const searchRegex = new RegExp(query, 'i');
     const searchQuery = {
-        $text: { $search: query },
+        $or: [
+            { formTitle: searchRegex },
+            { purpose: searchRegex },
+            { instructions: searchRegex },
+            { keywords: searchRegex },
+            { formNumber: searchRegex }
+        ],
         status: 'Active',
         isDeleted: false
     };
@@ -223,8 +230,7 @@ courtFormSchema.statics.searchForms = function (query, category = null) {
         searchQuery.category = category;
     }
 
-    return this.find(searchQuery, { score: { $meta: 'textScore' } })
-        .sort({ score: { $meta: 'textScore' } });
+    return this.find(searchQuery).sort({ formNumber: 1 });
 };
 
 courtFormSchema.statics.findByCategory = function (category) {

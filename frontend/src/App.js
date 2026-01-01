@@ -15,6 +15,7 @@ import CasesPage from './pages/cases/CasesPage';
 import CaseDetailPage from './pages/cases/CaseDetailPage';
 import ResearchPage from './pages/research/ResearchPage';
 import MarketplacePage from './pages/marketplace/MarketplacePage';
+import LawyerPublicProfilePage from './pages/marketplace/LawyerPublicProfilePage';
 import FindLawyersPage from './pages/FindLawyersPage';
 import ChatPage from './pages/chat/ChatPage';
 import PollsPage from './pages/polls/PollsPage';
@@ -38,6 +39,7 @@ function App() {
                     <Route path="research" element={<ResearchPage />} />
                     <Route path="marketplace" element={<MarketplacePage />} />
                     <Route path="find-lawyers" element={<FindLawyersPage />} />
+                    <Route path="lawyer/:id" element={<LawyerPublicProfilePage />} />
                 </Route>
 
                 {/* Auth Routes */}

@@ -340,17 +340,34 @@ lawyerProfileSchema.methods.incrementViews = async function () {
 };
 
 // Static method to search profiles
-lawyerProfileSchema.statics.searchProfiles = function (query, filters = {}) {
+lawyerProfileSchema.statics.searchProfiles = function (query, filters = {}, userIds = []) {
     const searchQuery = {
         isPubliclyVisible: true
     };
 
-    // Text search
-    if (query) {
-        searchQuery.$text = { $search: query };
+    // Combine Text/Regex search with User Name search
+    if (query || userIds.length > 0) {
+        const orConditions = [];
+
+        if (query) {
+            const regex = new RegExp(query, 'i');
+            orConditions.push(
+                { professionalTitle: regex },
+                { bio: regex },
+                { firmName: regex },
+                { specializations: regex },
+                { areasOfPractice: regex }
+            );
+        }
+
+        if (userIds.length > 0) {
+            orConditions.push({ user: { $in: userIds } });
+        }
+
+        searchQuery.$or = orConditions;
     }
 
-    // Filters
+    // Filters (AND conditions)
     if (filters.city) searchQuery['officeAddress.city'] = new RegExp(filters.city, 'i');
     if (filters.specialization) searchQuery.specializations = filters.specialization;
     if (filters.minExperience) searchQuery.yearsOfExperience = { $gte: parseInt(filters.minExperience) };

@@ -44,6 +44,7 @@ const MainLayout = () => {
                                 <div className="user-menu">
                                     <span className="user-name">{user?.firstName} {user?.lastName}</span>
                                     <span className="user-role">({user?.role})</span>
+                                    <Link to="/dashboard/profile" className="btn btn-sm btn-outline" style={{ width: '100%', marginBottom: '5px' }}>My Profile</Link>
                                     <button onClick={handleLogout} className="btn btn-outline">{t('logout', { defaultValue: 'Logout' })}</button>
                                 </div>
                             </>

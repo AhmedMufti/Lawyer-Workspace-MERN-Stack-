@@ -4,10 +4,13 @@ import PollCard from './PollCard';
 import './PollCard.css';
 import { FaPoll } from 'react-icons/fa';
 
+import CreatePollModal from './CreatePollModal';
+
 const PollsPage = () => {
     const [polls, setPolls] = useState([]);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('Active');
+    const [showCreateModal, setShowCreateModal] = useState(false);
 
     useEffect(() => {
         fetchPolls();
@@ -39,9 +42,14 @@ const PollsPage = () => {
     return (
         <div className="polls-page">
             <div className="container">
-                <div className="polls-header">
-                    <h1 className="page-title">Bar Association Elections</h1>
-                    <p className="page-subtitle">Participate in opinion polls and view election trends</p>
+                <div className="polls-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h1 className="page-title">Bar Association Elections</h1>
+                        <p className="page-subtitle">Participate in opinion polls and view election trends</p>
+                    </div>
+                    <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+                        + Create New Poll
+                    </button>
                 </div>
 
                 <div className="tabs-container">
@@ -83,6 +91,16 @@ const PollsPage = () => {
                             </div>
                         )}
                     </div>
+                )}
+
+                {showCreateModal && (
+                    <CreatePollModal
+                        onClose={() => setShowCreateModal(false)}
+                        onSuccess={() => {
+                            fetchPolls();
+                            setActiveTab('Active');
+                        }}
+                    />
                 )}
             </div>
         </div>

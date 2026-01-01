@@ -305,9 +305,18 @@ caseLawSchema.methods.removeBookmark = async function (userId) {
 caseLawSchema.statics.advancedSearch = function (params) {
     const query = { isDeleted: false };
 
-    // Text search
+    // Text search (Regex replacement)
     if (params.searchTerm) {
-        query.$text = { $search: params.searchTerm };
+        const searchRegex = new RegExp(params.searchTerm, 'i');
+        query.$or = [
+            { caseTitle: searchRegex },
+            { citation: searchRegex },
+            { petitioner: searchRegex },
+            { respondent: searchRegex },
+            { judgmentText: searchRegex },
+            { keywords: searchRegex },
+            { headnotes: searchRegex }
+        ];
     }
 
     // Filters
@@ -320,10 +329,22 @@ caseLawSchema.statics.advancedSearch = function (params) {
 
     // Party search
     if (params.party) {
-        query.$or = [
-            { petitioner: new RegExp(params.party, 'i') },
-            { respondent: new RegExp(params.party, 'i') }
-        ];
+        // If $or exists (from searchTerm), we need to handle it carefully, but usually party is separate or specific.
+        // If party specific search is requested, meaningful AND logic applies.
+        // But for simplicity in this schema helper:
+        const partyRegex = new RegExp(params.party, 'i');
+        if (query.$or) {
+            query.$and = [
+                { $or: query.$or },
+                { $or: [{ petitioner: partyRegex }, { respondent: partyRegex }] }
+            ];
+            delete query.$or;
+        } else {
+            query.$or = [
+                { petitioner: partyRegex },
+                { respondent: partyRegex }
+            ];
+        }
     }
 
     // Date range
@@ -333,11 +354,11 @@ caseLawSchema.statics.advancedSearch = function (params) {
         if (params.toDate) query.decisionDate.$lte = new Date(params.toDate);
     }
 
-    // Subject/keyword
-    if (params.subject) query.subjects = params.subject.toLowerCase();
-    if (params.keyword) query.keywords = params.keyword.toLowerCase();
+    // Subject/keyword (Exact/Regex)
+    if (params.subject) query.subjects = new RegExp(params.subject, 'i');
+    if (params.keyword) query.keywords = new RegExp(params.keyword, 'i');
 
-    return this.find(query);
+    return this.find(query).sort({ decisionDate: -1 });
 };
 
 caseLawSchema.statics.findByCourt = function (court, limit = 20) {

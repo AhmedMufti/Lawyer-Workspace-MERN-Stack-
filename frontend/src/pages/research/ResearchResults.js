@@ -21,28 +21,34 @@ const ResearchResults = ({ results, type, loading, onDownload, onView }) => {
     }
 
     const renderActCard = (act) => (
-        <div key={act._id} className="result-card act-card card-glass" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%'
-        }}>
-            <div className="result-icon">
-                <FaBook />
-            </div>
-            <div className="result-content">
-                <h3>{act.title}</h3>
-                <div className="result-meta">
-                    <span className="badge">{act.year}</span>
-                    <span className="badge category">{act.category}</span>
-                    <span className="badge jurisdiction">{act.jurisdiction}</span>
+        <div key={act._id} className="result-card act-card">
+            <div className="result-header">
+                <div className="result-icon-wrapper">
+                    <FaBook />
                 </div>
-                <p className="result-description">{act.description ? act.description.substring(0, 150) + '...' : 'No description available.'}</p>
+                <div>
+                    <h3 className="result-title">{act.title}</h3>
+                    <span className="result-subtitle">{act.shortTitle} • {act.year}</span>
+                </div>
             </div>
+
+            <div className="result-meta">
+                <span className="badge badge-outline">{act.category}</span>
+                <span className="badge badge-outline">{act.jurisdiction}</span>
+                <span className="badge badge-outline" style={{ color: act.status === 'Active' ? '#10b981' : '#ef4444' }}>{act.status}</span>
+            </div>
+
+            <div className="keyword-tags">
+                {act.keywords && act.keywords.slice(0, 4).map((kw, i) => (
+                    <span key={i} className="keyword-tag">#{kw}</span>
+                ))}
+            </div>
+
             <div className="result-actions">
-                <button className="btn btn-sm btn-outline" onClick={() => onView(act)}>
+                <button className="action-btn btn-view" onClick={() => onView(act)}>
                     <FaEye /> View
                 </button>
-                <button className="btn btn-sm btn-primary" onClick={() => onDownload(act, 'pdf')}>
+                <button className="action-btn btn-download" onClick={() => onDownload(act, 'pdf')}>
                     <FaDownload /> PDF
                 </button>
             </div>
@@ -51,27 +57,33 @@ const ResearchResults = ({ results, type, loading, onDownload, onView }) => {
 
     const renderCaseLawCard = (caseLaw) => (
         <div key={caseLaw._id} className="result-card case-card">
-            <div className="result-icon">
-                <FaGavel />
-            </div>
-            <div className="result-content">
-                <h3>{caseLaw.caseTitle}</h3>
-                <div className="result-meta">
-                    <span className="citation">{caseLaw.citation}</span>
-                    <span className="badge court">{caseLaw.court}</span>
-                    <span className="date">{new Date(caseLaw.decisionDate).toLocaleDateString()}</span>
+            <div className="result-header">
+                <div className="result-icon-wrapper">
+                    <FaGavel />
                 </div>
-                <div className="keywords">
-                    {caseLaw.keywords && caseLaw.keywords.slice(0, 3).map((kw, i) => (
-                        <span key={i} className="keyword-tag">{kw}</span>
-                    ))}
+                <div>
+                    <h3 className="result-title">{caseLaw.caseTitle}</h3>
+                    <span className="result-subtitle">{caseLaw.citation} • {new Date(caseLaw.decisionDate).getFullYear()}</span>
                 </div>
             </div>
+
+            <div className="result-meta">
+                <span className="badge badge-outline">{caseLaw.court}</span>
+                <span className="badge badge-outline">{caseLaw.caseType}</span>
+                <span className="badge badge-outline" style={{ borderColor: '#3b82f6', color: '#3b82f6' }}>{caseLaw.importance}</span>
+            </div>
+
+            <div className="keyword-tags">
+                {caseLaw.keywords && caseLaw.keywords.slice(0, 4).map((kw, i) => (
+                    <span key={i} className="keyword-tag">#{kw}</span>
+                ))}
+            </div>
+
             <div className="result-actions">
-                <button className="btn btn-sm btn-outline" onClick={() => onView(caseLaw)}>
+                <button className="action-btn btn-view" onClick={() => onView(caseLaw)}>
                     <FaEye /> Read
                 </button>
-                <button className="btn btn-sm btn-primary" onClick={() => onDownload(caseLaw, 'pdf')}>
+                <button className="action-btn btn-download" onClick={() => onDownload(caseLaw, 'pdf')}>
                     <FaDownload /> PDF
                 </button>
             </div>
@@ -80,23 +92,32 @@ const ResearchResults = ({ results, type, loading, onDownload, onView }) => {
 
     const renderFormCard = (form) => (
         <div key={form._id} className="result-card form-card">
-            <div className="result-icon">
-                <FaFileAlt />
-            </div>
-            <div className="result-content">
-                <h3>{form.formTitle}</h3>
-                <div className="result-meta">
-                    <span className="form-number">Form #{form.formNumber}</span>
-                    <span className="badge category">{form.category}</span>
+            <div className="result-header">
+                <div className="result-icon-wrapper">
+                    <FaFileAlt />
+                </div>
+                <div>
+                    <h3 className="result-title">{form.formTitle}</h3>
+                    <span className="result-subtitle">Form #{form.formNumber}</span>
                 </div>
             </div>
+
+            <div className="result-meta">
+                <span className="badge badge-outline">{form.category}</span>
+                <span className="badge badge-outline">{form.jurisdiction || 'Universal'}</span>
+            </div>
+
+            <div className="keyword-tags">
+                <span className="keyword-tag" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>Fillable PDF</span>
+            </div>
+
             <div className="result-actions">
                 {form.wordDocPath && (
-                    <button className="btn btn-sm btn-outline" onClick={() => onDownload(form, 'word')}>
+                    <button className="action-btn btn-view" onClick={() => onDownload(form, 'word')}>
                         <FaFilePdf /> Word
                     </button>
                 )}
-                <button className="btn btn-sm btn-primary" onClick={() => onDownload(form, 'pdf')}>
+                <button className="action-btn btn-download" onClick={() => onDownload(form, 'pdf')}>
                     <FaDownload /> PDF
                 </button>
             </div>
@@ -106,7 +127,7 @@ const ResearchResults = ({ results, type, loading, onDownload, onView }) => {
     return (
         <div className="research-results-list" style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
             gap: '1.5rem',
             marginTop: '1.5rem'
         }}>

@@ -1,6 +1,7 @@
 const LawyerProfile = require('../models/LawyerProfile');
 const MarketplaceItem = require('../models/MarketplaceItem');
 const Review = require('../models/Review');
+const User = require('../models/User');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const { sendSuccess, sendPaginated } = require('../utils/responseFormatter');
@@ -33,6 +34,24 @@ exports.createOrUpdateProfile = catchAsync(async (req, res, next) => {
 
     await profile.populate('user', 'firstName lastName email phone');
     sendSuccess(res, profile ? 200 : 201, 'Profile saved successfully', { profile });
+});
+
+// @desc    Get current lawyer profile
+// @route   GET /api/marketplace/profiles/me
+// @access  Private (Lawyers only)
+exports.getMyProfile = catchAsync(async (req, res, next) => {
+    if (req.user.role !== 'lawyer') {
+        return next(new AppError('Only lawyers have profiles', 403));
+    }
+
+    const profile = await LawyerProfile.findOne({ user: req.user._id })
+        .populate('user', 'firstName lastName email phone');
+
+    if (!profile) {
+        return next(new AppError('Profile not found', 404));
+    }
+
+    sendSuccess(res, 200, 'Profile retrieved', { profile });
 });
 
 // @desc    Get lawyer profiles
@@ -68,8 +87,19 @@ exports.getProfiles = catchAsync(async (req, res, next) => {
 exports.searchProfiles = catchAsync(async (req, res, next) => {
     const { query, page = 1, limit = 20, ...filters } = req.query;
 
+    let userIds = [];
+    if (query) {
+        const users = await User.find({
+            $or: [
+                { firstName: { $regex: query, $options: 'i' } },
+                { lastName: { $regex: query, $options: 'i' } }
+            ]
+        }).select('_id');
+        userIds = users.map(u => u._id);
+    }
+
     const skip = (page - 1) * limit;
-    const profiles = await LawyerProfile.searchProfiles(query, filters)
+    const profiles = await LawyerProfile.searchProfiles(query, filters, userIds)
         .skip(skip)
         .limit(parseInt(limit));
 

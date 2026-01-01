@@ -4,6 +4,8 @@ const CourtForm = require('../models/CourtForm');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const { sendSuccess, sendPaginated } = require('../utils/responseFormatter');
+const path = require('path');
+const fs = require('fs');
 
 /**
  * ACTS/LEGISLATION CONTROLLERS
@@ -117,11 +119,20 @@ exports.downloadAct = catchAsync(async (req, res, next) => {
         return next(new AppError('PDF not available for this act', 404));
     }
 
+    // Construct absolute path
+    const absolutePath = path.resolve(__dirname, '..', act.pdfPath);
+
+    // Check if file exists
+    if (!fs.existsSync(absolutePath)) {
+        console.error(`File not found at: ${absolutePath}`);
+        return next(new AppError('File not found on server', 404));
+    }
+
     // Increment download count
     await act.incrementDownloadCount();
 
     // Send file
-    res.download(act.pdfPath, `${act.title} ${act.year}.pdf`);
+    res.download(absolutePath, `${act.title} ${act.year}.pdf`);
 });
 
 /**
@@ -257,11 +268,71 @@ exports.downloadCaseLaw = catchAsync(async (req, res, next) => {
         return next(new AppError('PDF not available for this case', 404));
     }
 
+    // Construct absolute path
+    const absolutePath = path.resolve(__dirname, '..', caseLaw.pdfPath);
+
+    // Check if file exists
+    if (!fs.existsSync(absolutePath)) {
+        console.error(`File not found at: ${absolutePath}`);
+        return next(new AppError('File not found on server', 404));
+    }
+
     // Increment download count
     await caseLaw.incrementDownloadCount();
 
     // Send file
-    res.download(caseLaw.pdfPath, `${caseLaw.citation}.pdf`);
+    res.download(absolutePath, `${caseLaw.citation}.pdf`);
+});
+
+// ... (Bookmarks)
+
+// @desc    Download form
+// @route   GET /api/research/forms/:id/download
+// @access  Public
+exports.downloadForm = catchAsync(async (req, res, next) => {
+    const { type = 'pdf' } = req.query; // pdf, word, fillable
+
+    const form = await CourtForm.findById(req.params.id);
+
+    if (!form) {
+        return next(new AppError('Form not found', 404));
+    }
+
+    let filePath;
+    let fileName;
+
+    switch (type) {
+        case 'word':
+            filePath = form.wordDocPath;
+            fileName = `${form.formNumber} - ${form.formTitle}.docx`;
+            break;
+        case 'fillable':
+            filePath = form.fillablePdfPath;
+            fileName = `${form.formNumber} - ${form.formTitle} (Fillable).pdf`;
+            break;
+        default:
+            filePath = form.pdfPath;
+            fileName = `${form.formNumber} - ${form.formTitle}.pdf`;
+    }
+
+    if (!filePath) {
+        return next(new AppError(`${type} version not available for this form`, 404));
+    }
+
+    // Construct absolute path
+    const absolutePath = path.resolve(__dirname, '..', filePath);
+
+    // Check if file exists
+    if (!fs.existsSync(absolutePath)) {
+        console.error(`File not found at: ${absolutePath}`);
+        return next(new AppError('File not found on server', 404));
+    }
+
+    // Increment download count
+    await form.incrementDownloadCount();
+
+    // Send file
+    res.download(absolutePath, fileName);
 });
 
 // @desc    Get my bookmarks
@@ -472,6 +543,242 @@ exports.getResearchStatistics = catchAsync(async (req, res, next) => {
     });
 
     sendSuccess(res, 200, 'Research statistics retrieved successfully', { statistics });
+});
+
+// TEMPORARY SEEDING FUNCTION
+exports.seedData = catchAsync(async (req, res, next) => {
+    const seedActs = [
+        {
+            title: 'The Constitution of the Islamic Republic of Pakistan',
+            shortTitle: 'Constitution of Pakistan',
+            year: 1973,
+            actNumber: 'N/A',
+            category: 'Constitutional Law',
+            jurisdiction: 'Federal',
+            status: 'Active',
+            fullText: 'The Constitution of the Islamic Republic of Pakistan is the supreme law of Pakistan...',
+            preamble: 'Whereas sovereignty over the entire Universe belongs to Almighty Allah alone...',
+            keywords: ['constitution', 'fundamental rights', 'parliament', 'judiciary'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            isDeleted: false
+        },
+        {
+            title: 'Pakistan Penal Code',
+            shortTitle: 'PPC',
+            year: 1860,
+            actNumber: 'XLV',
+            category: 'Criminal Law',
+            jurisdiction: 'Federal',
+            status: 'Active',
+            fullText: 'An Act to provide a general Penal Code for Pakistan...',
+            keywords: ['crime', 'punishment', 'offences', 'murder', 'theft', 'robbery'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            isDeleted: false
+        },
+        {
+            title: 'Code of Civil Procedure',
+            shortTitle: 'CPC',
+            year: 1908,
+            category: 'Civil Law',
+            status: 'Active',
+            fullText: 'An Act to consolidate and amend the laws relating to the Procedure of the Courts of Civil Judicature...',
+            keywords: ['civil', 'court', 'procedure', 'summons', 'decree'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            isDeleted: false
+        },
+        {
+            title: 'Code of Criminal Procedure',
+            shortTitle: 'CrPC',
+            year: 1898,
+            category: 'Criminal Law',
+            status: 'Active',
+            fullText: 'An Act to consolidate and amend the law relating to the Criminal Procedure...',
+            keywords: ['criminal', 'arrest', 'bail', 'investigation', 'police'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            isDeleted: false
+        },
+        {
+            title: 'Family Courts Act',
+            shortTitle: 'Family Courts Act',
+            year: 1964,
+            category: 'Family Law',
+            status: 'Active',
+            fullText: 'An Act to provide for the establishment of Family Courts...',
+            keywords: ['family', 'divorce', 'khula', 'dower', 'maintenance'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            isDeleted: false
+        },
+        {
+            title: 'Prevention of Electronic Crimes Act',
+            shortTitle: 'PECA',
+            year: 2016,
+            category: 'Criminal Law',
+            status: 'Active',
+            fullText: 'An Act to make provision for prevention of electronic crimes...',
+            keywords: ['cybercrime', 'internet', 'privacy', 'data', 'defamation'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            isDeleted: false
+        },
+        {
+            title: 'Companies Act',
+            shortTitle: 'Companies Act',
+            year: 2017,
+            category: 'Corporate Law',
+            status: 'Active',
+            fullText: 'An Act to reform and consolidate the law relating to companies...',
+            keywords: ['company', 'corporate', 'shares', 'directors', 'secp'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            isDeleted: false
+        }
+    ];
+
+    const seedCases = [
+        {
+            caseTitle: 'Asma Jilani vs. The Government of the Punjab',
+            citation: 'PLD 1972 SC 139',
+            petitioner: 'Asma Jilani',
+            respondent: 'Government of the Punjab',
+            court: 'Supreme Court of Pakistan',
+            decisionDate: new Date('1972-04-20'),
+            caseType: 'Constitutional',
+            year: 1972,
+            judgmentText: 'The Doctrine of Necessity was declared invalid...',
+            summary: 'Landmark decision against martial law.',
+            importance: 'Landmark',
+            keywords: ['martial law', 'necessity', 'constitution'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            disposition: 'Allowed'
+        },
+        {
+            caseTitle: 'Al-Jehad Trust vs. Federation of Pakistan',
+            citation: 'PLD 1996 SC 324',
+            petitioner: 'Al-Jehad Trust',
+            respondent: 'Federation of Pakistan',
+            court: 'Supreme Court of Pakistan',
+            decisionDate: new Date('1996-03-20'),
+            caseType: 'Constitutional',
+            year: 1996,
+            judgmentText: 'Principles regarding the appointment of judges...',
+            summary: 'Judges Appointment Case.',
+            importance: 'Landmark',
+            keywords: ['judiciary', 'appointment', 'independence'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            disposition: 'Allowed'
+        },
+        {
+            caseTitle: 'Wardan vs. The State',
+            citation: '2023 SCMR 1234',
+            petitioner: 'Wardan',
+            respondent: 'The State',
+            court: 'Supreme Court of Pakistan',
+            decisionDate: new Date('2023-01-15'),
+            caseType: 'Criminal',
+            year: 2023,
+            judgmentText: 'Bail granted in case of further inquiry...',
+            summary: 'Grant of post-arrest bail in a murder case.',
+            importance: 'Important',
+            keywords: ['bail', 'murder', 'criminal'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            disposition: 'Allowed'
+        },
+        {
+            caseTitle: 'Messrs ABC Pvt Ltd vs. FBR',
+            citation: '2022 PTD 567',
+            petitioner: 'Messrs ABC Pvt Ltd',
+            respondent: 'Federal Board of Revenue',
+            court: 'Sindh High Court',
+            decisionDate: new Date('2022-06-10'),
+            caseType: 'Tax',
+            year: 2022,
+            judgmentText: 'Sales tax input adjustment allowed...',
+            summary: 'Decision regarding input tax adjustment.',
+            importance: 'Standard',
+            keywords: ['tax', 'fbr', 'corporate'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            disposition: 'Allowed'
+        },
+        {
+            caseTitle: 'Suo Moto Case No. 4 of 2010',
+            citation: 'PLD 2011 SC 997',
+            petitioner: 'Suo Moto',
+            respondent: 'The State',
+            court: 'Supreme Court of Pakistan',
+            decisionDate: new Date('2011-06-08'),
+            caseType: 'Constitutional',
+            year: 2011,
+            judgmentText: 'Regarding law and order situation in Karachi...',
+            summary: 'Karachi Law and Order Case.',
+            importance: 'Landmark',
+            keywords: ['karachi', 'human rights', 'terrorism'],
+            pdfPath: 'uploads/research/dummy.pdf',
+            disposition: 'Other'
+        }
+    ];
+
+    const seedForms = [
+        {
+            formNumber: 'CP-01',
+            formTitle: 'Plaint in a Civil Suit',
+            category: 'Civil Procedure',
+            purpose: 'To initiate a civil lawsuit.',
+            pdfPath: 'uploads/research/dummy.pdf',
+            status: 'Active'
+        },
+        {
+            formNumber: 'CrP-12',
+            formTitle: 'Bail Application (Post-Arrest)',
+            category: 'Criminal Procedure',
+            purpose: 'To apply for bail.',
+            pdfPath: 'uploads/research/dummy.pdf',
+            status: 'Active'
+        },
+        {
+            formNumber: 'Fam-05',
+            formTitle: 'Suit for Dissolution of Marriage (Khula)',
+            category: 'Family Courts',
+            purpose: 'For wife to seek divorce.',
+            pdfPath: 'uploads/research/dummy.pdf',
+            status: 'Active'
+        },
+        {
+            formNumber: 'Rent-02',
+            formTitle: 'Ejectment Petition',
+            category: 'Civil Procedure',
+            purpose: 'To evict a tenant.',
+            pdfPath: 'uploads/research/dummy.pdf',
+            status: 'Active'
+        },
+        {
+            formNumber: 'Corp-09',
+            formTitle: 'Company Incorporation Form II',
+            category: 'Other',
+            purpose: 'For registering a new company.',
+            pdfPath: 'uploads/research/dummy.pdf',
+            status: 'Active'
+        }
+    ];
+
+    let count = 0;
+    for (const act of seedActs) {
+        if (!await Act.findOne({ title: act.title })) {
+            await Act.create(act);
+            count++;
+        }
+    }
+    for (const c of seedCases) {
+        if (!await CaseLaw.findOne({ citation: c.citation })) {
+            await CaseLaw.create(c);
+            count++;
+        }
+    }
+    for (const f of seedForms) {
+        if (!await CourtForm.findOne({ formNumber: f.formNumber })) {
+            await CourtForm.create(f);
+            count++;
+        }
+    }
+
+    sendSuccess(res, 200, `Seeding completed. Added ${count} new items.`);
 });
 
 module.exports = exports;

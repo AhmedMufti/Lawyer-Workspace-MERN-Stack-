@@ -23,7 +23,7 @@ const PollCard = ({ poll, onVoteSuccess }) => {
             const config = { headers: { Authorization: `Bearer ${token}` } };
 
             await axios.post(`/api/polls/${poll._id}/vote`, { optionId }, config);
-            alert('Vote cast successfully!');
+            // Don't alert, just update
             if (onVoteSuccess) onVoteSuccess();
         } catch (error) {
             console.error('Voting failed:', error);
@@ -54,12 +54,10 @@ const PollCard = ({ poll, onVoteSuccess }) => {
                                 disabled={voting || poll.status !== 'Active'}
                             >
                                 <div className="option-text">
-                                    <span>{option.text}</span>
-                                    {poll.status === 'Closed' && <span className="percentage">{percentage}%</span>}
+                                    <span>{option.optionText}</span>
+                                    <span className="percentage">{percentage}%</span>
                                 </div>
-                                {poll.status === 'Closed' && (
-                                    <div className="progress-bar" style={{ width: `${percentage}%` }}></div>
-                                )}
+                                <div className="progress-bar" style={{ width: `${percentage}%` }}></div>
                             </button>
                         </div>
                     );
@@ -68,7 +66,7 @@ const PollCard = ({ poll, onVoteSuccess }) => {
 
             <div className="poll-footer">
                 <span className="vote-count"><FaVoteYea /> {totalVotes} votes</span>
-                <span className="poll-expiry">Ends: {new Date(poll.expiresAt).toLocaleDateString()}</span>
+                <span className="poll-expiry">Ends: {new Date(poll.endDate).toLocaleDateString()}</span>
             </div>
         </div>
     );

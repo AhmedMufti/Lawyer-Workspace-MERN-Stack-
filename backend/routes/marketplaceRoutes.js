@@ -16,6 +16,9 @@ router.route('/profiles')
     .get(marketplaceController.getProfiles)
     .post(protect, restrictTo('lawyer'), marketplaceController.createOrUpdateProfile);
 
+// Get my profile
+router.get('/profiles/me', protect, restrictTo('lawyer'), marketplaceController.getMyProfile);
+
 // Get profile by ID
 router.get('/profiles/:id', marketplaceController.getProfileById);
 

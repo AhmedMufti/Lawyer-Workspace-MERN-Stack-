@@ -92,32 +92,31 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Authentication routes
-app.use('/api/auth', require('./routes/authRoutes'));
+// Import route files
+const authRoutes = require('./routes/authRoutes');
+const caseRoutes = require('./routes/caseRoutes');
+const documentRoutes = require('./routes/documentRoutes');
+const hearingRoutes = require('./routes/hearingRoutes');
+// const notificationRoutes = require('./routes/notificationRoutes'); // TODO: Create notification routes
+const pollRoutes = require('./routes/pollRoutes');
+const chatRoutes = require('./routes/chatRoutes');
+const marketplaceRoutes = require('./routes/marketplaceRoutes');
+const researchRoutes = require('./routes/researchRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
-// Case management routes
-app.use('/api/cases', require('./routes/caseRoutes'));
-
-// Document management routes
-app.use('/api/documents', require('./routes/documentRoutes'));
-
-// Hearing management routes
-app.use('/api/hearings', require('./routes/hearingRoutes'));
-
-// Legal research routes
-app.use('/api/research', require('./routes/researchRoutes'));
-
-// Marketplace routes
-app.use('/api/marketplace', require('./routes/marketplaceRoutes'));
-
-// Chat routes
-app.use('/api/chat', require('./routes/chatRoutes'));
-
-// Poll/Election routes
-app.use('/api/polls', require('./routes/pollRoutes'));
-
-// Payment routes
-app.use('/api/payments', require('./routes/paymentRoutes'));
+// Use routes
+app.use('/api/auth', authRoutes);
+app.use('/api/cases', caseRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/hearings', hearingRoutes);
+// app.use('/api/notifications', notificationRoutes);
+app.use('/api/polls', pollRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
+app.use('/api/research', researchRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

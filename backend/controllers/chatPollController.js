@@ -83,12 +83,16 @@ exports.getPolls = catchAsync(async (req, res, next) => {
     const query = { status };
     if (barAssociation) query['targetAudience.barAssociation'] = barAssociation;
 
+    console.log('Poll Query:', JSON.stringify(query));
+
     const skip = (page - 1) * limit;
     const polls = await Poll.find(query)
         .populate('createdBy', 'firstName lastName')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit));
+
+    console.log('Polls Found:', polls.length);
 
     const total = await Poll.countDocuments(query);
 

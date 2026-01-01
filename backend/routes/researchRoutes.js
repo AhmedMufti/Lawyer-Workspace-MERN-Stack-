@@ -11,6 +11,9 @@ const router = express.Router();
 // Get research statistics (public)
 router.get('/statistics', researchController.getResearchStatistics);
 
+// SEED ROUTE (Temporary - GET for easy browser access)
+router.get('/seed', researchController.seedData);
+
 /**
  * ACTS/LEGISLATION ROUTES
  */

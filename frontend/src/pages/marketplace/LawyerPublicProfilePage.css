@@ -1,0 +1,200 @@
+.lawyer-public-profile {
+  padding-bottom: 4rem;
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+}
+
+.back-link {
+  display: inline-block;
+  margin: 1rem 0;
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.profile-header-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.profile-cover {
+  height: 150px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.profile-main-info {
+  padding: 2rem;
+  padding-top: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: -50px;
+}
+
+.profile-avatar-large {
+  width: 120px;
+  height: 120px;
+  background: var(--bg-secondary);
+  border: 4px solid var(--bg-secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.info-text {
+  flex: 1;
+  padding-bottom: 0.5rem;
+}
+
+.info-text h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.headline {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 0.25rem 0;
+}
+
+.location {
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.badges {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.badge.specialization {
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary-color);
+}
+
+.badge.experience {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.action-buttons {
+  padding-bottom: 1rem;
+}
+
+/* Grid Layout */
+.profile-content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .profile-content-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-main-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: -60px;
+  }
+  .info-text {
+    width: 100%;
+  }
+  .location {
+    justify-content: center;
+  }
+  .badges {
+    justify-content: center;
+  }
+}
+
+.profile-section {
+  background: var(--bg-secondary);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.profile-section h2, .profile-section h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.bio-text {
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--text-secondary);
+}
+
+.detail-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: flex-start;
+}
+
+.detail-row .icon {
+  margin-top: 3px;
+  color: var(--primary-color);
+}
+
+.detail-row p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.star-yellow {
+  color: #fbbf24;
+}
+
+.loading-spinner, .error-message {
+  padding: 3rem;
+  text-align: center;
+  font-size: 1.2rem;
+}

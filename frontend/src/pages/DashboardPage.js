@@ -2,29 +2,28 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { fetchCases } from '../store/slices/caseSlice';
+import { fetchDashboardStats } from '../store/slices/dashboardSlice';
 import './DashboardPage.css';
 
 const DashboardPage = () => {
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
-    const { cases, loading } = useSelector((state) => state.cases);
+    const { cases, loading: casesLoading } = useSelector((state) => state.cases);
+    const { stats: dashboardStats, recentActivity: dashboardActivity, upcomingHearings, loading: dashboardLoading } = useSelector((state) => state.dashboard);
 
     useEffect(() => {
         dispatch(fetchCases({ page: 1, limit: 5 }));
+        dispatch(fetchDashboardStats());
     }, [dispatch]);
 
     const stats = [
-        { title: 'Total Cases', value: cases?.length || 0, icon: '📁', color: '#667eea' },
-        { title: 'Active Cases', value: cases?.filter(c => c.caseStatus === 'In Progress').length || 0, icon: '⚖️', color: '#f59e0b' },
-        { title: 'Upcoming Hearings', value: 0, icon: '📅', color: '#10b981' },
-        { title: 'Documents', value: 0, icon: '📄', color: '#ef4444' }
+        { title: 'Total Cases', value: dashboardStats?.cases?.total || 0, icon: '📁', color: '#667eea' },
+        { title: 'Active Cases', value: dashboardStats?.cases?.active || 0, icon: '⚖️', color: '#f59e0b' },
+        { title: 'Upcoming Hearings', value: dashboardStats?.hearings || 0, icon: '📅', color: '#10b981' },
+        { title: 'Documents', value: dashboardStats?.documents || 0, icon: '📄', color: '#ef4444' }
     ];
 
-    const recentActivity = [
-        { action: 'Case filed', case: 'ABC vs XYZ', time: '2 hours ago' },
-        { action: 'Document uploaded', case: 'DEF vs GHI', time: '5 hours ago' },
-        { action: 'Hearing scheduled', case: 'JKL vs MNO', time: '1 day ago' }
-    ];
+    const recentActivity = dashboardActivity && dashboardActivity.length > 0 ? dashboardActivity : [];
 
     return (
         <div className="dashboard-page">
@@ -47,7 +46,7 @@ const DashboardPage = () => {
                         <div key={index} className="stat-card" style={{ '--accent-color': stat.color }}>
                             <div className="stat-icon">{stat.icon}</div>
                             <div className="stat-content">
-                                <div className="stat-value">{stat.value}</div>
+                                <div className="stat-value">{dashboardLoading ? '-' : stat.value}</div>
                                 <div className="stat-title">{stat.title}</div>
                             </div>
                         </div>
@@ -62,7 +61,7 @@ const DashboardPage = () => {
                             <Link to="/dashboard/cases" className="card-link">View All</Link>
                         </div>
                         <div className="card-content">
-                            {loading ? (
+                            {casesLoading ? (
                                 <div className="loading-state">
                                     <div className="spinner-large"></div>
                                     <p>Loading cases...</p>
@@ -104,18 +103,29 @@ const DashboardPage = () => {
                             <h2 className="card-title">Recent Activity</h2>
                         </div>
                         <div className="card-content">
-                            <div className="activity-list">
-                                {recentActivity.map((activity, index) => (
-                                    <div key={index} className="activity-item">
-                                        <div className="activity-dot"></div>
-                                        <div className="activity-content">
-                                            <div className="activity-action">{activity.action}</div>
-                                            <div className="activity-case">{activity.case}</div>
-                                            <div className="activity-time">{activity.time}</div>
+                            {dashboardLoading ? (
+                                <div className="loading-state">
+                                    <div className="spinner-small"></div>
+                                    <p>Loading activity...</p>
+                                </div>
+                            ) : recentActivity.length > 0 ? (
+                                <div className="activity-list">
+                                    {recentActivity.map((activity, index) => (
+                                        <div key={index} className="activity-item">
+                                            <div className="activity-dot"></div>
+                                            <div className="activity-content">
+                                                <div className="activity-action">{activity.title}</div>
+                                                <div className="activity-case">{activity.subtitle}</div>
+                                                <div className="activity-time">{new Date(activity.date).toLocaleString()}</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="empty-state">
+                                    <p>No recent activity</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 

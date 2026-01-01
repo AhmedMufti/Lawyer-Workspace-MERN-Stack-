@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ResearchResults from './ResearchResults';
+import DocumentViewer from './DocumentViewer';
 import './ResearchPage.css';
 import { FaSearch, FaFilter } from 'react-icons/fa';
 
@@ -10,13 +11,9 @@ const ResearchPage = () => {
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
+    const [selectedDocument, setSelectedDocument] = useState(null);
 
-    // Initial fetch when tab changes
-    useEffect(() => {
-        setResults([]);
-        setPagination(prev => ({ ...prev, page: 1 }));
-        fetchData(activeTab, '', 1);
-    }, [activeTab]);
+    // ... (rest of useEffect and fetchData)
 
     const fetchData = async (type, query, page) => {
         setLoading(true);
@@ -24,7 +21,6 @@ const ResearchPage = () => {
             let endpoint = '';
             let params = { page, limit: 10 };
 
-            // Determine endpoint based on tab and query
             if (query) {
                 params.query = query;
                 if (type === 'acts') endpoint = '/api/research/acts/search';
@@ -39,17 +35,13 @@ const ResearchPage = () => {
             const response = await axios.get(endpoint, { params });
             const data = response.data.data;
 
-            // Handle different response structures if any
             if (type === 'acts') setResults(data.acts || data);
             else if (type === 'cases') setResults(data.caseLaws || data);
             else if (type === 'forms') setResults(data.forms || data);
 
-            if (response.data.pagination) {
-                setPagination(response.data.pagination);
-            }
+            if (response.data.pagination) setPagination(response.data.pagination);
         } catch (error) {
             console.error('Error fetching research data:', error);
-            // Fallback for demo purposes if backend is empty
             setResults([]);
         } finally {
             setLoading(false);
@@ -92,9 +84,7 @@ const ResearchPage = () => {
     };
 
     const handleView = (item) => {
-        console.log('View item:', item);
-        // Implement view modal here
-        alert(`Viewing: ${item.title || item.caseTitle || item.formTitle}`);
+        setSelectedDocument(item);
     };
 
     return (
@@ -162,9 +152,19 @@ const ResearchPage = () => {
                         onView={handleView}
                     />
                 </div>
+
+                {selectedDocument && (
+                    <DocumentViewer
+                        document={selectedDocument}
+                        type={activeTab}
+                        onClose={() => setSelectedDocument(null)}
+                        onDownload={handleDownload}
+                    />
+                )}
             </div>
         </div>
     );
 };
 
 export default ResearchPage;
+

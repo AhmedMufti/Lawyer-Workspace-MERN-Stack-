@@ -1,5 +1,6 @@
 const Document = require('../models/Document');
 const Case = require('../models/Case');
+const crypto = require('crypto');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const { sendSuccess, sendPaginated } = require('../utils/responseFormatter');
@@ -42,6 +43,13 @@ exports.uploadDocument = catchAsync(async (req, res, next) => {
         importance
     } = req.body;
 
+
+    // Generate file hash
+    const fileBuffer = await fs.readFile(req.file.path);
+    const hashSum = crypto.createHash('sha256');
+    hashSum.update(fileBuffer);
+    const fileHash = hashSum.digest('hex');
+
     // Create document record
     const document = await Document.create({
         documentTitle: documentTitle || req.file.originalname,
@@ -57,6 +65,7 @@ exports.uploadDocument = catchAsync(async (req, res, next) => {
         fileSize: req.file.size,
         mimeType: req.file.mimetype,
         fileExtension: path.extname(req.file.originalname).toLowerCase().substring(1),
+        fileHash: fileHash,
         uploadedBy: req.user._id,
         uploadSource: 'Web Upload',
         isConfidential: isConfidential === 'true',
@@ -83,14 +92,21 @@ exports.getCaseDocuments = catchAsync(async (req, res, next) => {
     const { caseId } = req.params;
     const { page = 1, limit = 20, type, category } = req.query;
 
-    // Verify case exists and user has access
+    // Verify case exists
     const caseData = await Case.findById(caseId);
     if (!caseData) {
         return next(new AppError('Case not found', 404));
     }
 
-    if (!caseData.canAccess(req.user._id) && req.user.role !== 'admin') {
-        return next(new AppError('You do not have permission to view documents for this case', 403));
+    // Check access to case
+    // Ensure both user ID and case data are valid before checking access
+    try {
+        if (!caseData.canAccess(req.user._id) && req.user.role !== 'admin') {
+            return next(new AppError('You do not have permission to view documents for this case', 403));
+        }
+    } catch (err) {
+        console.error('Access check failed:', err);
+        return next(new AppError('Error verifying access permission', 500));
     }
 
     // Build query
@@ -100,19 +116,25 @@ exports.getCaseDocuments = catchAsync(async (req, res, next) => {
 
     // Execute query
     const skip = (page - 1) * limit;
-    const documents = await Document.find(query)
-        .populate('uploadedBy', 'firstName lastName email')
-        .sort({ uploadDate: -1 })
-        .skip(skip)
-        .limit(parseInt(limit));
 
-    const total = await Document.countDocuments(query);
+    try {
+        const documents = await Document.find(query)
+            .populate('uploadedBy', 'firstName lastName email')
+            .sort({ uploadDate: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
 
-    sendPaginated(res, 200, 'Documents retrieved successfully', documents, {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total
-    });
+        const total = await Document.countDocuments(query);
+
+        sendPaginated(res, 200, 'Documents retrieved successfully', documents || [], {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total
+        });
+    } catch (err) {
+        console.error('Document fetch error:', err);
+        return next(new AppError('Error fetching documents', 500));
+    }
 });
 
 /**
