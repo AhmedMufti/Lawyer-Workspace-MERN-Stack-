@@ -32,8 +32,7 @@ const MainLayout = () => {
 
                     <nav className="main-nav">
                         <Link to="/" className="nav-link">{t('welcome', { defaultValue: 'Home' }).split(' ')[0]}</Link>
-                        <Link to="/research" className="nav-link">{t('research', { defaultValue: 'Legal Research' })}</Link>
-                        <Link to="/marketplace" className="nav-link">{t('marketplace', { defaultValue: 'Marketplace' })}</Link>
+
 
                         <button className="btn btn-sm btn-outline lang-btn" onClick={toggleLanguage} style={{ display: 'flex', alignItems: 'center', gap: '5px', borderRadius: '20px' }}>
                             <FaGlobe /> {i18n.language === 'en' ? 'اردو' : 'English'}

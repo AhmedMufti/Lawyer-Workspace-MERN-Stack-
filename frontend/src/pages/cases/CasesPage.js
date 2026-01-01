@@ -7,6 +7,7 @@ import './CasesPage.css';
 const CasesPage = () => {
     const dispatch = useDispatch();
     const { cases, loading, error } = useSelector((state) => state.cases);
+    const { user: activeUser } = useSelector((state) => state.auth); // Rename to avoid conflict if any
     const [showModal, setShowModal] = useState(false);
     const [activeTab, setActiveTab] = useState('basic');
 
@@ -70,7 +71,7 @@ const CasesPage = () => {
         const errors = validateForm();
         if (errors.length > 0) {
             setValidationError(errors[0].msg);
-            setActiveTab(errors[0].tab); // Switch to the tab with the error
+            setActiveTab(errors[0].tab);
             return;
         }
 
@@ -80,6 +81,17 @@ const CasesPage = () => {
             setFormData(initialFormState);
             setActiveTab('basic');
             setValidationError(null);
+        } else if (createCase.rejected.match(result)) {
+            // Display backend error
+            const backendError = result.payload;
+            let errorMsg = backendError?.message || 'Failed to create case';
+
+            // If there are detailed field errors, show the first one
+            if (backendError?.errors && Array.isArray(backendError.errors) && backendError.errors.length > 0) {
+                errorMsg = `${backendError.message}: ${backendError.errors[0].message}`;
+            }
+
+            setValidationError(errorMsg);
         }
     };
 
@@ -110,9 +122,12 @@ const CasesPage = () => {
                         <h1 className="page-title">Case Management</h1>
                         <p className="page-subtitle">Organize, track, and manage your legal proceedings efficiently.</p>
                     </div>
-                    <button onClick={() => setShowModal(true)} className="btn btn-primary">
-                        <span className="icon-plus">+</span> New Case
-                    </button>
+                    {/* Only show 'New Case' button for lawyers */}
+                    {activeUser?.role === 'lawyer' && (
+                        <button onClick={() => setShowModal(true)} className="btn btn-primary">
+                            <span className="icon-plus">+</span> New Case
+                        </button>
+                    )}
                 </header>
 
                 {error && <div className="alert alert-error">{typeof error === 'string' ? error : error.message || 'An error occurred'}</div>}
@@ -163,7 +178,9 @@ const CasesPage = () => {
                                 <div className="empty-icon">📂</div>
                                 <h3>No cases found</h3>
                                 <p>Get started by creating your first legal case.</p>
-                                <button onClick={() => setShowModal(true)} className="btn btn-primary mt-4">Create First Case</button>
+                                {activeUser?.role === 'lawyer' && (
+                                    <button onClick={() => setShowModal(true)} className="btn btn-primary mt-4">Create First Case</button>
+                                )}
                             </div>
                         )}
                     </div>

@@ -20,7 +20,7 @@ const generateAccessToken = (userId, role) => {
         },
         process.env.JWT_SECRET,
         {
-            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m'
+            expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '30d'
         }
     );
 };

@@ -15,10 +15,11 @@
     background: var(--bg-card, #1e293b);
     border-radius: 12px;
     width: 90%;
-    max-width: 700px;
-    max-height: 90vh;
+    max-width: 900px;
+    height: 90vh; /* Fixed height relative to viewport */
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Contain scrollable areas inside */
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }

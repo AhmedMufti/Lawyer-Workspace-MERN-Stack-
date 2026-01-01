@@ -34,9 +34,11 @@ const DashboardPage = () => {
                         <h1 className="page-title">Welcome back, {user?.firstName}!</h1>
                         <p className="page-subtitle">Here's what's happening with your cases today</p>
                     </div>
-                    <Link to="/dashboard/cases" className="btn btn-primary">
-                        <span>+</span> New Case
-                    </Link>
+                    {user?.role === 'lawyer' && (
+                        <Link to="/dashboard/cases" className="btn btn-primary">
+                            <span>+</span> New Case
+                        </Link>
+                    )}
                 </div>
 
                 {/* Stats Grid */}
@@ -124,21 +126,27 @@ const DashboardPage = () => {
                         </div>
                         <div className="card-content">
                             <div className="quick-actions">
-                                <Link to="/dashboard/cases" className="action-btn">
-                                    <span className="action-icon">📁</span>
-                                    <span className="action-text">New Case</span>
-                                </Link>
+                                {user?.role === 'lawyer' && (
+                                    <Link to="/dashboard/cases" className="action-btn">
+                                        <span className="action-icon">📁</span>
+                                        <span className="action-text">New Case</span>
+                                    </Link>
+                                )}
                                 <Link to="/research" className="action-btn">
                                     <span className="action-icon">📚</span>
                                     <span className="action-text">Legal Research</span>
                                 </Link>
-                                <Link to="/marketplace" className="action-btn">
+                                <Link to="/find-lawyers" className="action-btn">
                                     <span className="action-icon">👥</span>
                                     <span className="action-text">Find Lawyers</span>
                                 </Link>
                                 <Link to="/dashboard/chat" className="action-btn">
                                     <span className="action-icon">💬</span>
                                     <span className="action-text">Chat Rooms</span>
+                                </Link>
+                                <Link to="/marketplace" className="action-btn">
+                                    <span className="action-icon">🛍️</span>
+                                    <span className="action-text">Marketplace</span>
                                 </Link>
                                 <Link to="/dashboard/polls" className="action-btn">
                                     <span className="action-icon">📊</span>

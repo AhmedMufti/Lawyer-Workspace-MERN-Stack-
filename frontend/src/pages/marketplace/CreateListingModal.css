@@ -1,6 +1,11 @@
 .create-listing-modal {
     width: 90%;
     max-width: 600px;
+    max-height: 90vh; /* Prevent overflowing screen height */
+    overflow-y: auto; /* Enable scrolling */
+    background: var(--bg-card, #1e293b);
+    position: relative;
+    border-radius: 12px;
 }
 
 .form-group {

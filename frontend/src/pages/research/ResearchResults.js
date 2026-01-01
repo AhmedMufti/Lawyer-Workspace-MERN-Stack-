@@ -21,7 +21,11 @@ const ResearchResults = ({ results, type, loading, onDownload, onView }) => {
     }
 
     const renderActCard = (act) => (
-        <div key={act._id} className="result-card act-card">
+        <div key={act._id} className="result-card act-card card-glass" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%'
+        }}>
             <div className="result-icon">
                 <FaBook />
             </div>
@@ -100,7 +104,12 @@ const ResearchResults = ({ results, type, loading, onDownload, onView }) => {
     );
 
     return (
-        <div className="research-results-list">
+        <div className="research-results-list" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: '1.5rem',
+            marginTop: '1.5rem'
+        }}>
             {type === 'acts' && results.map(renderActCard)}
             {type === 'cases' && results.map(renderCaseLawCard)}
             {type === 'forms' && results.map(renderFormCard)}

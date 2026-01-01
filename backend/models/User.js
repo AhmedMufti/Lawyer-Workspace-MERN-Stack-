@@ -55,8 +55,7 @@ const userSchema = new mongoose.Schema(
                 message: '{VALUE} is not a valid role'
             },
             required: [true, 'User role is required'],
-            default: 'litigant',
-            index: true
+            default: 'litigant'
         },
 
         // Lawyer-specific Information

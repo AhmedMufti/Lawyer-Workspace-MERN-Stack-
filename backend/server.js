@@ -15,6 +15,9 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
+// Trust proxy (required for rate limiting behind proxies like Nginx/Heroku/Render)
+app.set('trust proxy', 1);
+
 // Connect to MongoDB
 connectDB();
 

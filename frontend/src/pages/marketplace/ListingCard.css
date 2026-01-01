@@ -6,6 +6,7 @@
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
+    height: 100%; /* Ensure full height in grid */
 }
 
 .listing-card:hover {

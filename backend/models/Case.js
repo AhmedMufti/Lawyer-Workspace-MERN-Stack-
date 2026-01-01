@@ -8,8 +8,7 @@ const caseSchema = new mongoose.Schema(
             required: [true, 'Case number is required'],
             unique: true,
             trim: true,
-            uppercase: true,
-            index: true
+            uppercase: true
         },
         caseTitle: {
             type: String,
@@ -375,31 +374,39 @@ caseSchema.pre('save', function (next) {
 
 // Instance method to check if user has access
 caseSchema.methods.canAccess = function (userId) {
+    const uid = userId.toString();
+
+    // Helper to safe stringify ID whether populated or not
+    const safeId = (field) => {
+        if (!field) return null;
+        return (field._id || field).toString();
+    };
+
     // Lead lawyer always has access
-    if (this.leadLawyer.toString() === userId.toString()) {
+    if (safeId(this.leadLawyer) === uid) {
         return true;
     }
 
     // Check associated lawyers
     const isAssociatedLawyer = this.associatedLawyers.some(
-        al => al.lawyer.toString() === userId.toString()
+        al => safeId(al.lawyer) === uid
     );
     if (isAssociatedLawyer) return true;
 
     // Check clerks
     const isClerk = this.clerks.some(
-        clerk => clerk.toString() === userId.toString()
+        clerk => safeId(clerk) === uid
     );
     if (isClerk) return true;
 
     // Check allowed users
     const isAllowedUser = this.allowedUsers.some(
-        user => user.toString() === userId.toString()
+        user => safeId(user) === uid
     );
     if (isAllowedUser) return true;
 
     // Check if created by user
-    if (this.createdBy.toString() === userId.toString()) {
+    if (safeId(this.createdBy) === uid) {
         return true;
     }
 

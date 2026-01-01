@@ -43,22 +43,23 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
         e.preventDefault();
         setLoading(true);
 
+        console.log('Submitting Listing Payload:', formData); // DEBUG
+        console.log('Current Token:', localStorage.getItem('accessToken')); // DEBUG
+
         try {
-            // Get token from local storage (assuming standard storage)
-            const token = localStorage.getItem('token');
-
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+            // Ensure price is a number
+            const payload = {
+                ...formData,
+                price: Number(formData.price)
             };
-
-            await axios.post('/api/marketplace/items', formData, config);
+            await axios.post('/api/marketplace/items', payload);
             onSuccess();
             onClose();
         } catch (error) {
-            console.error('Error creating listing:', error);
-            alert('Failed to create listing. Please try again.');
+            console.error('FULL ERROR OBJECT:', error); // DEBUG
+            const errorMsg = error.response?.data?.message || error.message || 'Failed to create listing.';
+            console.error('Server Error Response:', error.response?.data); // DEBUG
+            alert(`Error: ${errorMsg}`);
         } finally {
             setLoading(false);
         }

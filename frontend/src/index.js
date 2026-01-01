@@ -27,12 +27,13 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        if (error.response && error.response.status === 401) {
             // If token expired or unauthorized, logout
             store.dispatch(logoutLocal());
             // Optionally redirect to login
             // window.location.href = '/login';
         }
+        return Promise.reject(error);
         return Promise.reject(error);
     }
 );

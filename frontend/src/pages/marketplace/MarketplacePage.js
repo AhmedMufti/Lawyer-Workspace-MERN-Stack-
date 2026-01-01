@@ -58,27 +58,28 @@ const MarketplacePage = () => {
     return (
         <div className="marketplace-page">
             <div className="container">
-                <div className="marketplace-header">
-                    <div>
-                        <h1 className="page-title">Marketplace</h1>
-                        <p className="page-subtitle">Buy, sell, and find legal resources</p>
-                    </div>
-                    <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+                <div className="marketplace-header" style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <h1 className="page-title" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Marketplace</h1>
+                    <p className="page-subtitle" style={{ fontSize: '1.1rem', color: '#94a3b8', marginBottom: '1.5rem' }}>Buy, sell, and find legal resources</p>
+                    <button className="btn btn-primary" onClick={() => setShowCreateModal(true)} style={{ margin: '0 auto' }}>
                         <FaPlus /> Post Listing
                     </button>
                 </div>
 
-                <div className="search-section">
-                    <form onSubmit={handleSearch} className="search-bar">
-                        <FaSearch className="search-icon" />
-                        <input
-                            type="text"
-                            placeholder="Search items, books, services..."
-                            className="search-input"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        <button type="submit" className="btn btn-primary">Search</button>
+                <div className="search-section" style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
+                    <form onSubmit={handleSearch} className="search-bar" style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: '800px' }}>
+                        <div style={{ position: 'relative', flex: 1 }}>
+                            <FaSearch className="search-icon" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                            <input
+                                type="text"
+                                placeholder="Search items, books, services..."
+                                className="search-input"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{ width: '100%', paddingLeft: '3rem', paddingRight: '1rem', height: '50px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: '#1e293b', color: 'white', outline: 'none' }}
+                            />
+                        </div>
+                        <button type="submit" className="btn btn-primary" style={{ padding: '0 2rem', height: '50px' }}>Search</button>
                     </form>
                 </div>
 
@@ -93,8 +94,9 @@ const MarketplacePage = () => {
                             <div className="listing-grid" style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                                gap: '2rem',
-                                marginTop: '2rem'
+                                gap: '1.5rem',
+                                marginTop: '2rem',
+                                width: '100%'
                             }}>
                                 {items.map(item => (
                                     <ListingCard key={item._id} item={item} />

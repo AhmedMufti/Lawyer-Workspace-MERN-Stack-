@@ -58,8 +58,7 @@ const lawyerProfileSchema = new mongoose.Schema(
         enrollmentNumber: {
             type: String,
             required: true,
-            unique: true,
-            index: true
+            unique: true
         },
         enrollmentDate: Date,
         licenseStatus: {

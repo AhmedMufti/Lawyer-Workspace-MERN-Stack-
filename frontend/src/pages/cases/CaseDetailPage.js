@@ -6,14 +6,29 @@ import { fetchCaseById } from '../../store/slices/caseSlice';
 const CaseDetailPage = () => {
     const { id } = useParams();
     const dispatch = useDispatch();
-    const { currentCase, loading } = useSelector((state) => state.cases);
+    const { currentCase, loading, error } = useSelector((state) => state.cases);
 
     useEffect(() => {
         dispatch(fetchCaseById(id));
     }, [dispatch, id]);
 
     if (loading) return <div className="loading-state"><div className="spinner-large"></div></div>;
-    if (!currentCase) return <div>Case not found</div>;
+
+    if (error) {
+        return (
+            <div className="container" style={{ paddingTop: '2rem' }}>
+                <div className="alert alert-error">
+                    <h3>Error Loading Case</h3>
+                    <p>{error?.message || 'Could not load case details.'}</p>
+                    <button onClick={() => window.history.back()} className="btn btn-outline" style={{ marginTop: '1rem' }}>
+                        Go Back
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!currentCase) return <div className="container"><h3>Case not found</h3></div>;
 
     return (
         <div className="case-detail-page">

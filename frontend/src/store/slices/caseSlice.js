@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/cases';
+const API_URL = '/api/cases';
 
 const initialState = {
     cases: [],
@@ -98,8 +98,21 @@ const caseSlice = createSlice({
                 state.error = action.payload;
             })
             // Fetch case by ID
+            // Fetch case by ID
+            .addCase(fetchCaseById.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+                state.currentCase = null;
+            })
             .addCase(fetchCaseById.fulfilled, (state, action) => {
+                state.loading = false;
                 state.currentCase = action.payload.data.case;
+                state.error = null;
+            })
+            .addCase(fetchCaseById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+                state.currentCase = null;
             })
             // Create case
             .addCase(createCase.fulfilled, (state, action) => {
