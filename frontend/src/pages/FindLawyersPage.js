@@ -17,18 +17,25 @@ const FindLawyersPage = () => {
     const fetchLawyers = async () => {
         setLoading(true);
         try {
-            const params = {
-                query: searchQuery,
-                ...filters,
-                limit: 12
-            };
-            const cleanParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v)); // Remove empty params
+            let response;
 
-            const response = await axios.get('/api/marketplace/profiles/search', { params: cleanParams });
-            setLawyers(response.data.data.profiles || response.data.data); // Handle potential response variations
+            // Use search endpoint if searching, otherwise get all profiles
+            if (searchQuery || filters.city || filters.specialization) {
+                const params = {
+                    query: searchQuery,
+                    ...filters,
+                    limit: 20
+                };
+                const cleanParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v));
+                response = await axios.get('/api/marketplace/profiles/search', { params: cleanParams });
+            } else {
+                response = await axios.get('/api/marketplace/profiles', { params: { limit: 20 } });
+            }
+
+            setLawyers(response.data.data.profiles || response.data.data || []);
         } catch (error) {
             console.error('Error fetching lawyers:', error);
-            // setLawyers([]); // Keep previous results or empty
+            setLawyers([]);
         } finally {
             setLoading(false);
         }
@@ -36,11 +43,33 @@ const FindLawyersPage = () => {
 
     useEffect(() => {
         fetchLawyers();
-    }, [filters]); // Auto-fetch on filter change
+    }, [filters]);
 
     const handleSearch = (e) => {
         e.preventDefault();
         fetchLawyers();
+    };
+
+    const handleContact = async (userId) => {
+        if (!userId) {
+            alert('Lawyer contact info unavailable.');
+            return;
+        }
+        try {
+            const response = await axios.post('/api/chat/rooms/dm', { targetUserId: userId });
+            const roomId = response.data.data.room._id;
+            navigate(`/dashboard/chat?roomId=${roomId}`);
+        } catch (error) {
+            console.error('Failed to start chat:', error);
+            if (error.response?.status === 401) {
+                alert('Please login to contact lawyers.');
+                navigate('/login');
+            } else if (error.response?.status === 404) {
+                alert('This account no longer exists.');
+            } else {
+                alert('Could not start chat. Please try again later.');
+            }
+        }
     };
 
     return (
@@ -115,7 +144,17 @@ const FindLawyersPage = () => {
                                             <span>{lawyer.rating || 'New'}</span>
                                             <span className="review-count">({lawyer.reviewCount || 0} reviews)</span>
                                         </div>
-                                        <button onClick={() => navigate(`/lawyer/${lawyer._id}`)} className="btn btn-outline btn-sm">View Profile</button>
+                                        <div className="lawyer-actions">
+                                            <button
+                                                onClick={() => handleContact(lawyer.user?._id)}
+                                                className="btn btn-primary btn-sm"
+                                                disabled={!lawyer.user?._id}
+                                                style={{ marginRight: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                            >
+                                                <FaPhone /> Contact
+                                            </button>
+                                            <button onClick={() => navigate(`/lawyer/${lawyer._id}`)} className="btn btn-outline btn-sm">View Profile</button>
+                                        </div>
                                     </div>
                                 </div>
                             ))

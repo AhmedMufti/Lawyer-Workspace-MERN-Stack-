@@ -21,6 +21,10 @@ exports.createCase = catchAsync(async (req, res, next) => {
         return next(new AppError('Case number already exists', 400));
     }
 
+    // Debug logging
+    console.log('Creating case with allowedUsers:', req.body.allowedUsers);
+    console.log('Creating case with clerks:', req.body.clerks);
+
     // Set lead lawyer to current user
     req.body.leadLawyer = req.user._id;
     req.body.createdBy = req.user._id;
@@ -32,7 +36,8 @@ exports.createCase = catchAsync(async (req, res, next) => {
     await newCase.populate([
         { path: 'leadLawyer', select: 'firstName lastName email barLicenseNumber' },
         { path: 'associatedLawyers.lawyer', select: 'firstName lastName email' },
-        { path: 'clerks', select: 'firstName lastName email' }
+        { path: 'clerks', select: 'firstName lastName email' },
+        { path: 'allowedUsers', select: 'firstName lastName email' }
     ]);
 
     sendSuccess(res, 201, 'Case created successfully', { case: newCase });
@@ -49,6 +54,8 @@ exports.getMyCases = catchAsync(async (req, res, next) => {
     // Build query based on user role
     let query = {};
 
+    console.log('getMyCases - User:', req.user._id, 'Role:', req.user.role);
+
     if (req.user.role === 'admin') {
         // Admin can see all cases
         query = {};
@@ -59,10 +66,13 @@ exports.getMyCases = catchAsync(async (req, res, next) => {
                 { leadLawyer: req.user._id },
                 { 'associatedLawyers.lawyer': req.user._id },
                 { clerks: req.user._id },
+                { allowedUsers: req.user._id },
                 { createdBy: req.user._id }
             ]
         };
     }
+
+    console.log('getMyCases - Query:', JSON.stringify(query));
 
     // Add filters
     if (status) query.caseStatus = status;
@@ -79,6 +89,8 @@ exports.getMyCases = catchAsync(async (req, res, next) => {
         .limit(parseInt(limit));
 
     const total = await Case.countDocuments(query);
+
+    console.log('getMyCases - Found', total, 'cases');
 
     sendPaginated(res, 200, 'Cases retrieved successfully', cases, {
         page: parseInt(page),
@@ -97,6 +109,7 @@ exports.getCaseById = catchAsync(async (req, res, next) => {
         .populate('leadLawyer', 'firstName lastName email phone barLicenseNumber')
         .populate('associatedLawyers.lawyer', 'firstName lastName email phone')
         .populate('clerks', 'firstName lastName email phone')
+        .populate('allowedUsers', 'firstName lastName email')
         .populate('createdBy', 'firstName lastName email')
         .populate('lastModifiedBy', 'firstName lastName');
 
@@ -118,6 +131,8 @@ exports.getCaseById = catchAsync(async (req, res, next) => {
  * @access  Private
  */
 exports.updateCase = catchAsync(async (req, res, next) => {
+    console.log('updateCase - Request body:', JSON.stringify(req.body, null, 2));
+
     const caseData = await Case.findById(req.params.id);
 
     if (!caseData) {
@@ -141,11 +156,19 @@ exports.updateCase = catchAsync(async (req, res, next) => {
 
     // Update case
     Object.assign(caseData, req.body);
-    await caseData.save();
+
+    try {
+        await caseData.save();
+    } catch (saveError) {
+        console.log('updateCase - Save error:', saveError.message);
+        return next(new AppError(saveError.message, 400));
+    }
 
     // Populate and return
     await caseData.populate([
         { path: 'leadLawyer', select: 'firstName lastName email' },
+        { path: 'clerks', select: 'firstName lastName email' },
+        { path: 'allowedUsers', select: 'firstName lastName email' },
         { path: 'lastModifiedBy', select: 'firstName lastName' }
     ]);
 
@@ -395,6 +418,7 @@ exports.searchCases = catchAsync(async (req, res, next) => {
             { leadLawyer: req.user._id },
             { 'associatedLawyers.lawyer': req.user._id },
             { clerks: req.user._id },
+            { allowedUsers: req.user._id },
             { createdBy: req.user._id }
         ];
     }

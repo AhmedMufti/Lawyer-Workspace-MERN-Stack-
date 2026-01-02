@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import ListingCard from './ListingCard';
 import CreateListingModal from './CreateListingModal';
-import { FaPlus, FaSearch, FaFilter } from 'react-icons/fa';
+import ItemDetailModal from './ItemDetailModal';
+import { FaPlus, FaSearch } from 'react-icons/fa';
 import './ListingCard.css';
 
 const MarketplacePage = () => {
+    const navigate = useNavigate();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [pagination, setPagination] = useState({ page: 1, limit: 12, total: 0 });
+
+    // Details Modal State
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
 
     useEffect(() => {
         fetchItems();
@@ -30,16 +36,9 @@ const MarketplacePage = () => {
             };
 
             const response = await axios.get(endpoint, { params });
-            // API returns paginated data in data.data or directly as array depending on endpoint wrapper
-            // Based on controller: sendPaginated puts items in 'data'
             setItems(response.data.data.items || response.data.data);
-
-            if (response.data.pagination) {
-                setPagination(response.data.pagination);
-            }
         } catch (error) {
             console.error('Error fetching marketplace items:', error);
-            // Fallback for empty state or error
             setItems([]);
         } finally {
             setLoading(false);
@@ -52,7 +51,39 @@ const MarketplacePage = () => {
     };
 
     const handleCreateSuccess = () => {
-        fetchItems(); // Refresh list after creation
+        fetchItems();
+    };
+
+    const handleViewDetails = (item) => {
+        setSelectedItem(item);
+        setShowDetailModal(true);
+    };
+
+    const handleContact = async (seller) => {
+        if (!seller || !seller._id) {
+            alert('Seller information currently unavailable.');
+            return;
+        }
+
+        try {
+            // Start DM via API
+            const response = await axios.post('/api/chat/rooms/dm', { targetUserId: seller._id });
+            const roomId = response.data.data.room._id;
+
+            // Navigate to chat with this room selected
+            navigate(`/dashboard/chat?roomId=${roomId}`);
+        } catch (error) {
+            console.error('Failed to start chat:', error);
+            // Check for auth error
+            if (error.response?.status === 401) {
+                alert('Please login to contact sellers.');
+                navigate('/login');
+            } else if (error.response?.status === 404) {
+                alert('Seller account no longer exists. This listing might be outdated.');
+            } else {
+                alert('Could not start chat. Please try again later.');
+            }
+        }
     };
 
     return (
@@ -99,7 +130,12 @@ const MarketplacePage = () => {
                                 width: '100%'
                             }}>
                                 {items.map(item => (
-                                    <ListingCard key={item._id} item={item} />
+                                    <ListingCard
+                                        key={item._id}
+                                        item={item}
+                                        onContact={handleContact}
+                                        onViewDetails={handleViewDetails}
+                                    />
                                 ))}
                             </div>
                         ) : (
@@ -115,6 +151,13 @@ const MarketplacePage = () => {
                     isOpen={showCreateModal}
                     onClose={() => setShowCreateModal(false)}
                     onSuccess={handleCreateSuccess}
+                />
+
+                <ItemDetailModal
+                    isOpen={showDetailModal}
+                    onClose={() => setShowDetailModal(false)}
+                    item={selectedItem}
+                    onContact={handleContact}
                 />
             </div>
         </div>

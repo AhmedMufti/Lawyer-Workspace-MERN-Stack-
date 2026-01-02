@@ -126,6 +126,11 @@ const createCaseSchema = Joi.object({
         Joi.string().regex(/^[0-9a-fA-F]{24}$/)
     ),
 
+    // Litigants/Clients access
+    allowedUsers: Joi.array().items(
+        Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+    ),
+
     // Visibility
     visibility: Joi.string().valid('Private', 'Team Only', 'Client Access', 'Public').default('Team Only'),
     tags: Joi.array().items(Joi.string().trim().lowercase()),
@@ -135,6 +140,7 @@ const createCaseSchema = Joi.object({
 // Update case validation
 const updateCaseSchema = Joi.object({
     caseTitle: Joi.string().trim().max(500),
+    caseType: Joi.string().valid('Civil', 'Criminal', 'Family', 'Corporate', 'Constitutional', 'Tax', 'Labor', 'Property', 'Intellectual Property', 'Administrative', 'Other'),
     caseStatus: Joi.string().valid('Filed', 'Under Review', 'Admitted', 'In Progress', 'Hearing Scheduled', 'Judgment Reserved', 'Decided', 'Dismissed', 'Withdrawn', 'Settled', 'Archived'),
     priority: Joi.string().valid('Low', 'Medium', 'High', 'Urgent'),
     court: Joi.object({
@@ -145,6 +151,44 @@ const updateCaseSchema = Joi.object({
         courtNumber: Joi.string().allow(''),
         judge: Joi.string().trim().allow('')
     }),
+    // Parties
+    petitioner: Joi.object({
+        name: Joi.string().trim(),
+        contactNumber: Joi.string().allow(''),
+        email: Joi.string().email().allow(''),
+        address: Joi.object({
+            street: Joi.string().allow(''),
+            city: Joi.string().allow(''),
+            state: Joi.string().allow(''),
+            zipCode: Joi.string().allow('')
+        }),
+        cnic: Joi.string().allow('')
+    }),
+    respondent: Joi.object({
+        name: Joi.string().trim(),
+        contactNumber: Joi.string().allow(''),
+        email: Joi.string().email().allow(''),
+        address: Joi.object({
+            street: Joi.string().allow(''),
+            city: Joi.string().allow(''),
+            state: Joi.string().allow(''),
+            zipCode: Joi.string().allow('')
+        }),
+        cnic: Joi.string().allow('')
+    }),
+    // Team access
+    allowedUsers: Joi.array().items(
+        Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+    ),
+    clerks: Joi.array().items(
+        Joi.string().regex(/^[0-9a-fA-F]{24}$/)
+    ),
+    associatedLawyers: Joi.array().items(
+        Joi.object({
+            lawyer: Joi.string().regex(/^[0-9a-fA-F]{24}$/),
+            role: Joi.string().valid('Senior Counsel', 'Junior Counsel', 'Assistant', 'Consultant')
+        })
+    ),
     nextHearingDate: Joi.date(),
     expectedClosureDate: Joi.date(),
     description: Joi.string().max(5000).allow(''),

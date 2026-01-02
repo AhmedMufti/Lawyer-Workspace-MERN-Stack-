@@ -72,6 +72,20 @@ export const createCase = createAsyncThunk(
     }
 );
 
+// Update case
+export const updateCase = createAsyncThunk(
+    'cases/updateCase',
+    async ({ id, data }, { rejectWithValue }) => {
+        try {
+            const authAxios = getAuthAxios();
+            const response = await authAxios.patch(`/${id}`, data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || { message: 'Update failed' });
+        }
+    }
+);
+
 const caseSlice = createSlice({
     name: 'cases',
     initialState,
@@ -117,6 +131,15 @@ const caseSlice = createSlice({
             // Create case
             .addCase(createCase.fulfilled, (state, action) => {
                 state.cases.unshift(action.payload.data.case);
+            })
+            // Update case
+            .addCase(updateCase.fulfilled, (state, action) => {
+                state.currentCase = action.payload.data.case;
+                // Update in cases list too
+                const index = state.cases.findIndex(c => c._id === action.payload.data.case._id);
+                if (index !== -1) {
+                    state.cases[index] = action.payload.data.case;
+                }
             });
     }
 });

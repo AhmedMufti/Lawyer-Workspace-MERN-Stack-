@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { fetchCases } from '../store/slices/caseSlice';
 import { fetchDashboardStats } from '../store/slices/dashboardSlice';
 import './DashboardPage.css';
@@ -9,12 +10,61 @@ const DashboardPage = () => {
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
     const { cases, loading: casesLoading } = useSelector((state) => state.cases);
-    const { stats: dashboardStats, recentActivity: dashboardActivity, upcomingHearings, loading: dashboardLoading } = useSelector((state) => state.dashboard);
+    const { stats: dashboardStats, recentActivity: dashboardActivity, loading: dashboardLoading } = useSelector((state) => state.dashboard);
+
+    // Lawyer Profile State
+    const [hasLawyerProfile, setHasLawyerProfile] = useState(true); // Assume true initially
+    const [profileLoading, setProfileLoading] = useState(false);
+    const [profileCreating, setProfileCreating] = useState(false);
 
     useEffect(() => {
         dispatch(fetchCases({ page: 1, limit: 5 }));
         dispatch(fetchDashboardStats());
-    }, [dispatch]);
+
+        // Check if lawyer has a profile
+        if (user?.role === 'lawyer') {
+            checkLawyerProfile();
+        }
+    }, [dispatch, user]);
+
+    const checkLawyerProfile = async () => {
+        setProfileLoading(true);
+        try {
+            await axios.get('/api/marketplace/profiles/me');
+            setHasLawyerProfile(true);
+        } catch (error) {
+            if (error.response?.status === 404) {
+                setHasLawyerProfile(false);
+            }
+        } finally {
+            setProfileLoading(false);
+        }
+    };
+
+    const initializeLawyerProfile = async () => {
+        setProfileCreating(true);
+        try {
+            // Generate a unique enrollment number based on user ID and timestamp
+            const uniqueEnrollment = `PLN-${user._id?.slice(-6) || 'NEW'}-${Date.now().toString().slice(-4)}`;
+
+            await axios.post('/api/marketplace/profiles', {
+                primarySpecialization: 'General Practice',
+                barCouncil: user.barAssociation || 'Pakistan Bar Council',
+                enrollmentNumber: uniqueEnrollment,
+                yearsOfExperience: user.yearsOfExperience || 0,
+                isPubliclyVisible: true,
+                acceptingNewClients: true
+            });
+            setHasLawyerProfile(true);
+            alert('Your profile has been created! You will now appear in the "Find a Lawyer" section.');
+        } catch (error) {
+            console.error('Failed to create profile:', error);
+            const errMsg = error.response?.data?.message || 'Failed to create profile. Please try again.';
+            alert(errMsg);
+        } finally {
+            setProfileCreating(false);
+        }
+    };
 
     const stats = [
         { title: 'Total Cases', value: dashboardStats?.cases?.total || 0, icon: '📁', color: '#667eea' },
@@ -39,6 +89,46 @@ const DashboardPage = () => {
                         </Link>
                     )}
                 </div>
+
+                {/* Lawyer Profile Setup Prompt */}
+                {user?.role === 'lawyer' && !profileLoading && !hasLawyerProfile && (
+                    <div className="profile-setup-banner" style={{
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                        borderRadius: '12px',
+                        padding: '1.5rem 2rem',
+                        marginBottom: '2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '1rem'
+                    }}>
+                        <div style={{ flex: 1 }}>
+                            <h3 style={{ margin: 0, color: 'white', fontSize: '1.2rem' }}>
+                                📋 Complete Your Public Profile
+                            </h3>
+                            <p style={{ margin: '0.5rem 0 0', color: 'rgba(255,255,255,0.9)', fontSize: '0.95rem' }}>
+                                Set up your lawyer profile so clients can find you in the "Find a Lawyer" section.
+                            </p>
+                        </div>
+                        <button
+                            onClick={initializeLawyerProfile}
+                            disabled={profileCreating}
+                            style={{
+                                background: 'white',
+                                color: '#d97706',
+                                border: 'none',
+                                padding: '0.75rem 1.5rem',
+                                borderRadius: '8px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                fontSize: '0.95rem'
+                            }}
+                        >
+                            {profileCreating ? 'Creating...' : 'Initialize Profile'}
+                        </button>
+                    </div>
+                )}
 
                 {/* Stats Grid */}
                 <div className="stats-grid">

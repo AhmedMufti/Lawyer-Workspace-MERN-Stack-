@@ -1,7 +1,7 @@
 import React from 'react';
-import { FaTag, FaMapMarkerAlt, FaUser, FaPhone, FaWhatsapp } from 'react-icons/fa';
+import { FaTag, FaMapMarkerAlt, FaUser, FaPhone } from 'react-icons/fa';
 
-const ListingCard = ({ item }) => {
+const ListingCard = ({ item, onContact, onViewDetails }) => {
     return (
         <div className="listing-card">
             <div className="listing-image">
@@ -41,8 +41,8 @@ const ListingCard = ({ item }) => {
                 </p>
 
                 <div className="listing-actions">
-                    <button className="btn btn-sm btn-outline">Details</button>
-                    <button className="btn btn-sm btn-primary">
+                    <button className="btn btn-sm btn-outline" onClick={() => onViewDetails(item)}>Details</button>
+                    <button className="btn btn-sm btn-primary" onClick={() => onContact(item.seller)}>
                         <FaPhone /> Contact
                     </button>
                 </div>

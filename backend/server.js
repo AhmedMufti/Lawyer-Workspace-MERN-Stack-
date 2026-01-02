@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const errorMiddleware = require('./middleware/errorMiddleware');
 const AppError = require('./utils/appError');
+const socketHandler = require('./socketHandler');
 
 // Load environment variables
 dotenv.config();
@@ -104,9 +105,11 @@ const marketplaceRoutes = require('./routes/marketplaceRoutes');
 const researchRoutes = require('./routes/researchRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Use routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/cases', caseRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/hearings', hearingRoutes);
@@ -163,7 +166,16 @@ const server = app.listen(PORT, () => {
   console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 API: http://localhost:${PORT}/api/health`);
   console.log('=========================================');
+  console.log('=========================================');
 });
+
+// Initialize Socket.io
+try {
+  socketHandler.init(server);
+  console.log('Socket.io initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize Socket.io:', error);
+}
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { fetchCases, createCase } from '../../store/slices/caseSlice';
 import './CasesPage.css';
 
 const CasesPage = () => {
     const dispatch = useDispatch();
     const { cases, loading, error } = useSelector((state) => state.cases);
-    const { user: activeUser } = useSelector((state) => state.auth); // Rename to avoid conflict if any
+    const { user: activeUser } = useSelector((state) => state.auth);
     const [showModal, setShowModal] = useState(false);
     const [activeTab, setActiveTab] = useState('basic');
 
@@ -34,16 +35,82 @@ const CasesPage = () => {
             contactNumber: '',
             email: ''
         },
-        description: ''
+        description: '',
+        // New: Team access fields
+        litigantEmail: '',
+        clerkEmail: ''
     };
 
     const [formData, setFormData] = useState(initialFormState);
-
     const [validationError, setValidationError] = useState(null);
+
+    // Team member search states
+    const [litigantSearch, setLitigantSearch] = useState('');
+    const [clerkSearch, setClerkSearch] = useState('');
+    const [foundLitigant, setFoundLitigant] = useState(null);
+    const [foundClerk, setFoundClerk] = useState(null);
+    const [searchingLitigant, setSearchingLitigant] = useState(false);
+    const [searchingClerk, setSearchingClerk] = useState(false);
+    const [litigantError, setLitigantError] = useState('');
+    const [clerkError, setClerkError] = useState('');
 
     useEffect(() => {
         dispatch(fetchCases({ page: 1, limit: 20 }));
     }, [dispatch]);
+
+    // Search for user by email
+    const searchUserByEmail = async (email, type) => {
+        if (!email || !email.includes('@')) {
+            if (type === 'litigant') setLitigantError('Please enter a valid email');
+            else setClerkError('Please enter a valid email');
+            return;
+        }
+
+        if (type === 'litigant') {
+            setSearchingLitigant(true);
+            setLitigantError('');
+        } else {
+            setSearchingClerk(true);
+            setClerkError('');
+        }
+
+        try {
+            const response = await axios.get(`/api/users/search?email=${encodeURIComponent(email)}`);
+            const user = response.data.data?.user;
+
+            if (user) {
+                if (type === 'litigant') {
+                    setFoundLitigant(user);
+                    setFormData(prev => ({ ...prev, litigantEmail: email }));
+                } else {
+                    setFoundClerk(user);
+                    setFormData(prev => ({ ...prev, clerkEmail: email }));
+                }
+            } else {
+                if (type === 'litigant') setLitigantError('User not found with this email');
+                else setClerkError('User not found with this email');
+            }
+        } catch (err) {
+            const msg = err.response?.data?.message || 'User not found';
+            if (type === 'litigant') setLitigantError(msg);
+            else setClerkError(msg);
+        } finally {
+            if (type === 'litigant') setSearchingLitigant(false);
+            else setSearchingClerk(false);
+        }
+    };
+
+    const removeLitigant = () => {
+        setFoundLitigant(null);
+        setLitigantSearch('');
+        setFormData(prev => ({ ...prev, litigantEmail: '' }));
+    };
+
+    const removeClerk = () => {
+        setFoundClerk(null);
+        setClerkSearch('');
+        setFormData(prev => ({ ...prev, clerkEmail: '' }));
+    };
 
     const validateForm = () => {
         const errors = [];
@@ -75,12 +142,35 @@ const CasesPage = () => {
             return;
         }
 
-        const result = await dispatch(createCase(formData));
+        // Prepare case data with team members
+        const caseData = {
+            ...formData,
+            // Add litigant to allowedUsers array
+            allowedUsers: foundLitigant ? [foundLitigant._id] : [],
+            // Add clerk to clerks array
+            clerks: foundClerk ? [foundClerk._id] : []
+        };
+
+        // Debug logging
+        console.log('Found Litigant:', foundLitigant);
+        console.log('Found Clerk:', foundClerk);
+        console.log('Case Data being sent:', caseData);
+
+        // Remove the email fields since they're not part of the schema
+        delete caseData.litigantEmail;
+        delete caseData.clerkEmail;
+
+        const result = await dispatch(createCase(caseData));
         if (createCase.fulfilled.match(result)) {
             setShowModal(false);
             setFormData(initialFormState);
             setActiveTab('basic');
             setValidationError(null);
+            // Reset team member states
+            setFoundLitigant(null);
+            setFoundClerk(null);
+            setLitigantSearch('');
+            setClerkSearch('');
         } else if (createCase.rejected.match(result)) {
             // Display backend error
             const backendError = result.payload;
@@ -110,7 +200,8 @@ const CasesPage = () => {
     const tabs = [
         { id: 'basic', label: 'Basic Info' },
         { id: 'court', label: 'Court Details' },
-        { id: 'parties', label: 'Parties involved' },
+        { id: 'parties', label: 'Parties' },
+        { id: 'team', label: 'Team Access' },
         { id: 'description', label: 'Description' }
     ];
 
@@ -177,9 +268,13 @@ const CasesPage = () => {
                             <div className="empty-state">
                                 <div className="empty-icon">📂</div>
                                 <h3>No cases found</h3>
-                                <p>Get started by creating your first legal case.</p>
-                                {activeUser?.role === 'lawyer' && (
-                                    <button onClick={() => setShowModal(true)} className="btn btn-primary mt-4">Create First Case</button>
+                                {activeUser?.role === 'lawyer' ? (
+                                    <>
+                                        <p>Get started by creating your first legal case.</p>
+                                        <button onClick={() => setShowModal(true)} className="btn btn-primary mt-4">Create First Case</button>
+                                    </>
+                                ) : (
+                                    <p>You haven't been added to any cases yet. A lawyer will add you when you're involved in a case.</p>
                                 )}
                             </div>
                         )}
@@ -401,7 +496,114 @@ const CasesPage = () => {
                                         </div>
                                     )}
 
-                                    {/* Description Tab */}
+                                    {/* Team Access Tab */}
+                                    {activeTab === 'team' && (
+                                        <div className="form-section">
+                                            <p className="team-info-text" style={{ color: '#94a3b8', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                                                Add team members who should have access to view this case. Search by their registered email address.
+                                            </p>
+
+                                            {/* Litigant/Client Section */}
+                                            <div className="team-member-section" style={{ marginBottom: '2rem' }}>
+                                                <h4 style={{ color: '#f59e0b', marginBottom: '1rem' }}>👤 Litigant / Client</h4>
+
+                                                {foundLitigant ? (
+                                                    <div className="found-user-card" style={{
+                                                        background: 'rgba(16, 185, 129, 0.1)',
+                                                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                                                        borderRadius: '10px',
+                                                        padding: '1rem',
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <div>
+                                                            <strong style={{ color: '#10b981' }}>✓ {foundLitigant.firstName} {foundLitigant.lastName}</strong>
+                                                            <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>{foundLitigant.email}</p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={removeLitigant}
+                                                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1.2rem' }}
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="form-row">
+                                                        <div className="form-group" style={{ flex: 1 }}>
+                                                            <input
+                                                                type="email"
+                                                                value={litigantSearch}
+                                                                onChange={(e) => setLitigantSearch(e.target.value)}
+                                                                placeholder="Enter litigant's email address"
+                                                            />
+                                                            {litigantError && <span style={{ color: '#ef4444', fontSize: '0.8rem' }}>{litigantError}</span>}
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => searchUserByEmail(litigantSearch, 'litigant')}
+                                                            disabled={searchingLitigant}
+                                                            className="btn btn-outline"
+                                                            style={{ height: '44px' }}
+                                                        >
+                                                            {searchingLitigant ? 'Searching...' : 'Search'}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Clerk Section */}
+                                            <div className="team-member-section">
+                                                <h4 style={{ color: '#f59e0b', marginBottom: '1rem' }}>📋 Clerk</h4>
+
+                                                {foundClerk ? (
+                                                    <div className="found-user-card" style={{
+                                                        background: 'rgba(16, 185, 129, 0.1)',
+                                                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                                                        borderRadius: '10px',
+                                                        padding: '1rem',
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center'
+                                                    }}>
+                                                        <div>
+                                                            <strong style={{ color: '#10b981' }}>✓ {foundClerk.firstName} {foundClerk.lastName}</strong>
+                                                            <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>{foundClerk.email}</p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={removeClerk}
+                                                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1.2rem' }}
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="form-row">
+                                                        <div className="form-group" style={{ flex: 1 }}>
+                                                            <input
+                                                                type="email"
+                                                                value={clerkSearch}
+                                                                onChange={(e) => setClerkSearch(e.target.value)}
+                                                                placeholder="Enter clerk's email address"
+                                                            />
+                                                            {clerkError && <span style={{ color: '#ef4444', fontSize: '0.8rem' }}>{clerkError}</span>}
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => searchUserByEmail(clerkSearch, 'clerk')}
+                                                            disabled={searchingClerk}
+                                                            className="btn btn-outline"
+                                                            style={{ height: '44px' }}
+                                                        >
+                                                            {searchingClerk ? 'Searching...' : 'Search'}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                     {activeTab === 'description' && (
                                         <div className="form-section">
                                             <div className="form-group">

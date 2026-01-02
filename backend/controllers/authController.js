@@ -65,7 +65,28 @@ exports.register = catchAsync(async (req, res, next) => {
     // 4) Create new user
     const user = await User.create(userData);
 
-    // 5) Generate email verification token (Auto-verify for demo)
+    // 5) Auto-create LawyerProfile if role is lawyer
+    if (role === 'lawyer') {
+        const LawyerProfile = require('../models/LawyerProfile');
+        const uniqueEnrollment = `PLN-${user._id.toString().slice(-6)}-${Date.now().toString().slice(-4)}`;
+
+        try {
+            await LawyerProfile.create({
+                user: user._id,
+                primarySpecialization: 'General Practice',
+                barCouncil: barAssociation || 'Pakistan Bar Council',
+                enrollmentNumber: barLicenseNumber || uniqueEnrollment,
+                yearsOfExperience: yearsOfExperience || 0,
+                isPubliclyVisible: true,
+                acceptingNewClients: true
+            });
+        } catch (profileError) {
+            console.error('Failed to create lawyer profile:', profileError.message);
+            // Don't fail registration if profile creation fails
+        }
+    }
+
+    // 6) Generate email verification token (Auto-verify for demo)
     const { token: verificationToken, hashedToken, expires } = generateEmailVerificationToken();
     user.emailVerificationToken = hashedToken;
     user.emailVerificationExpires = expires;

@@ -429,13 +429,15 @@ caseSchema.methods.addLawyer = function (lawyerId, role = 'Junior Counsel') {
     }
 };
 
-// Static method to find cases by lawyer
-caseSchema.statics.findByLawyer = function (lawyerId) {
+// Static method to find cases by user (lawyer, clerk, or litigant)
+caseSchema.statics.findByLawyer = function (userId) {
     return this.find({
         $or: [
-            { leadLawyer: lawyerId },
-            { 'associatedLawyers.lawyer': lawyerId },
-            { clerks: lawyerId }
+            { leadLawyer: userId },
+            { 'associatedLawyers.lawyer': userId },
+            { clerks: userId },
+            { allowedUsers: userId },
+            { createdBy: userId }
         ],
         isDeleted: false
     });

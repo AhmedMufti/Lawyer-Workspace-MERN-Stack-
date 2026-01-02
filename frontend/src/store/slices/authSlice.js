@@ -30,6 +30,12 @@ export const register = createAsyncThunk(
             const response = await axios.post(`${API_URL}/register`, userData);
             return response.data;
         } catch (error) {
+            // Handle network errors or missing response
+            if (!error.response) {
+                return rejectWithValue({
+                    message: 'Network error. Please check if the server is running.'
+                });
+            }
             return rejectWithValue(error.response.data);
         }
     }
@@ -50,6 +56,12 @@ export const login = createAsyncThunk(
 
             return data;
         } catch (error) {
+            // Handle network errors or missing response
+            if (!error.response) {
+                return rejectWithValue({
+                    message: 'Network error. Please check if the server is running.'
+                });
+            }
             return rejectWithValue(error.response.data);
         }
     }
@@ -72,6 +84,21 @@ export const logout = createAsyncThunk(
             localStorage.removeItem('refreshToken');
         }
         return true;
+    }
+);
+
+// Update user profile
+export const updateProfile = createAsyncThunk(
+    'auth/updateProfile',
+    async (userData, { rejectWithValue }) => {
+        try {
+            const response = await axios.patch(`${API_URL}/me`, userData);
+            // Update localStorage
+            localStorage.setItem('user', JSON.stringify(response.data.data.user));
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
     }
 );
 
@@ -147,6 +174,22 @@ const authSlice = createSlice({
                 state.user = null;
                 state.token = null;
                 state.isAuthenticated = false;
+            })
+            // Update Profile
+            .addCase(updateProfile.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+                state.success = false;
+            })
+            .addCase(updateProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.success = true;
+                state.user = action.payload.data.user;
+            })
+            .addCase(updateProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+                state.success = false;
             });
     }
 });

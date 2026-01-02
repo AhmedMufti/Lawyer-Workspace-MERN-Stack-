@@ -2,6 +2,7 @@ const ChatRoom = require('../models/ChatRoom');
 const Message = require('../models/Message');
 const Poll = require('../models/Poll');
 const Vote = require('../models/Vote');
+const User = require('../models/User');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const { sendSuccess, sendPaginated } = require('../utils/responseFormatter');
@@ -23,8 +24,12 @@ exports.getChatRooms = catchAsync(async (req, res, next) => {
     // Filter by user's role and bar
     if (req.user.role === 'clerk') {
         query.allowedRoles = 'clerk';
-    } else if (req.user.role === 'lawyer') {
+    } else if (req.user.role === 'lawyer' && !req.query.mine) {
         query.allowedRoles = 'lawyer';
+    }
+
+    if (req.query.mine === 'true') {
+        query['members.user'] = req.user._id;
     }
 
     const rooms = await ChatRoom.find(query)
@@ -55,6 +60,47 @@ exports.getRoomMessages = catchAsync(async (req, res, next) => {
         limit: parseInt(limit),
         total: messages.length
     });
+});
+
+
+// @desc    Start direct chat
+// @route   POST /api/chat/rooms/dm
+// @access  Private
+exports.startDirectChat = catchAsync(async (req, res, next) => {
+    const { targetUserId } = req.body;
+
+    if (!targetUserId) {
+        return next(new AppError('Target user ID is required', 400));
+    }
+
+    // Check for existing private room with these 2 members
+    let room = await ChatRoom.findOne({
+        roomType: 'Private',
+        'members.user': { $all: [req.user._id, targetUserId] }
+    });
+
+    if (!room) {
+        const targetUser = await User.findById(targetUserId);
+        if (!targetUser) {
+            return next(new AppError('User not found', 404));
+        }
+
+        room = await ChatRoom.create({
+            roomName: `${req.user.firstName} & ${targetUser.firstName}`,
+            roomType: 'Private',
+            barAssociation: 'General',
+            isPublic: false,
+            requiresVerification: false,
+            members: [
+                { user: req.user._id, role: 'member' },
+                { user: targetUserId, role: 'member' }
+            ],
+            admins: [req.user._id],
+            createdBy: req.user._id
+        });
+    }
+
+    sendSuccess(res, 201, 'Direct chat initialized', { room });
 });
 
 /**
