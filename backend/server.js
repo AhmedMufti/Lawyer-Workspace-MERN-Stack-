@@ -58,7 +58,11 @@ app.use('/api/auth/register', authLimiter);
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: [
+    'http://localhost:3000',
+    'https://heroic-creponne-19a97d.netlify.app',
+    process.env.CLIENT_URL
+  ].filter(Boolean),
   credentials: true, // Allow cookies
   optionsSuccessStatus: 200
 };
