@@ -4,7 +4,29 @@ import { FaTimes, FaPlus, FaTrash } from 'react-icons/fa';
 import '../cases/CasesPage.css'; // Reusing modal styles
 
 const CreatePollModal = ({ onClose, onSuccess }) => {
-    // ... lines 7-42 (unchanged logic)
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [options, setOptions] = useState(['', '']); // Start with 2 empty options
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const handleOptionChange = (index, value) => {
+        const newOptions = [...options];
+        newOptions[index] = value;
+        setOptions(newOptions);
+    };
+
+    const addOption = () => {
+        setOptions([...options, '']);
+    };
+
+    const removeOption = (index) => {
+        if (options.length > 2) {
+            const newOptions = options.filter((_, i) => i !== index);
+            setOptions(newOptions);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
