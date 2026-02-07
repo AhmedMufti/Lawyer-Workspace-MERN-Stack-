@@ -142,6 +142,15 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Root route to clarify API paths
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Welcome to the Pakistan Legal Nexus API',
+    documentation: 'API endpoints are available at /api/*',
+    health_check: '/api/health'
+  });
+});
+
 // ============================================
 // ERROR HANDLING
 // ============================================
