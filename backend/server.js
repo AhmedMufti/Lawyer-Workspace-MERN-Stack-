@@ -61,6 +61,7 @@ const corsOptions = {
   origin: [
     'http://localhost:3000',
     'https://heroic-creponne-19a97d.netlify.app',
+    'https://earnest-praline-2c72a6.netlify.app',
     process.env.CLIENT_URL
   ].filter(Boolean),
   credentials: true, // Allow cookies
