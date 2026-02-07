@@ -1,7 +1,10 @@
 import axios from "axios";
 
+const baseURL = process.env.REACT_APP_API_URL || 'https://lawyer-workspace-mern-stack.onrender.com';
+console.log('🔌 API Base URL:', baseURL); // DEBUG: Check what the browser is actually using
+
 const api = axios.create({
-    baseURL: process.env.REACT_APP_API_URL || 'https://lawyer-workspace-mern-stack.onrender.com', // Fallback to Render URL
+    baseURL: baseURL,
     withCredentials: true
 });
 
