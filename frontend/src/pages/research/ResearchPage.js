@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/axios';
 import ResearchResults from './ResearchResults';
 import DocumentViewer from './DocumentViewer';
 import './ResearchPage.css';
@@ -32,7 +32,7 @@ const ResearchPage = () => {
                 else if (type === 'forms') endpoint = '/api/research/forms';
             }
 
-            const response = await axios.get(endpoint, { params });
+            const response = await api.get(endpoint, { params });
             const data = response.data.data;
 
             if (type === 'acts') setResults(data.acts || data);
@@ -69,7 +69,7 @@ const ResearchPage = () => {
                 filename = `${item.formTitle}.${format === 'word' ? 'docx' : 'pdf'}`;
             }
 
-            const response = await axios.get(url, { responseType: 'blob' });
+            const response = await api.get(url, { responseType: 'blob' });
             const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = downloadUrl;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import ListingCard from './ListingCard';
 import CreateListingModal from './CreateListingModal';
@@ -35,7 +35,7 @@ const MarketplacePage = () => {
                 query: query
             };
 
-            const response = await axios.get(endpoint, { params });
+            const response = await api.get(endpoint, { params });
             setItems(response.data.data.items || response.data.data);
         } catch (error) {
             console.error('Error fetching marketplace items:', error);
@@ -67,7 +67,7 @@ const MarketplacePage = () => {
 
         try {
             // Start DM via API
-            const response = await axios.post('/api/chat/rooms/dm', { targetUserId: seller._id });
+            const response = await api.post('/api/chat/rooms/dm', { targetUserId: seller._id });
             const roomId = response.data.data.room._id;
 
             // Navigate to chat with this room selected

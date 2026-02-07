@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/axios';
 import { FaUser, FaBriefcase, FaMapMarkerAlt, FaUniversity, FaStar, FaPhone, FaEnvelope } from 'react-icons/fa';
 import './LawyerPublicProfilePage.css';
 
@@ -13,7 +13,7 @@ const LawyerPublicProfilePage = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const response = await axios.get(`/api/marketplace/profiles/${id}`);
+                const response = await api.get(`/api/marketplace/profiles/${id}`);
                 setProfile(response.data.data.profile);
             } catch (err) {
                 setError('Profile not found');

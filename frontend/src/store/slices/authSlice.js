@@ -1,10 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import api from '../../api/axios';
 
 const API_URL = '/api/auth';
 
 // Configure axios to send cookies
-axios.defaults.withCredentials = true;
+// Configure axios to send cookies
+// api.defaults.withCredentials = true; // Handled in axios.js
 
 // Load user from localStorage
 const userFromStorage = localStorage.getItem('user')
@@ -27,7 +28,7 @@ export const register = createAsyncThunk(
     'auth/register',
     async (userData, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${API_URL}/register`, userData);
+            const response = await api.post(`${API_URL}/register`, userData);
             return response.data;
         } catch (error) {
             // Handle network errors or missing response
@@ -46,7 +47,7 @@ export const login = createAsyncThunk(
     'auth/login',
     async (credentials, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${API_URL}/login`, credentials);
+            const response = await api.post(`${API_URL}/login`, credentials);
             const { data } = response.data;
 
             // Store in localStorage
@@ -73,7 +74,7 @@ export const logout = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             // Call backend to clear cookies
-            await axios.post(`${API_URL}/logout`);
+            await api.post(`${API_URL}/logout`);
         } catch (error) {
             // Continue with local cleanup even if API fails
             console.error('Logout API error:', error);
@@ -92,7 +93,7 @@ export const updateProfile = createAsyncThunk(
     'auth/updateProfile',
     async (userData, { rejectWithValue }) => {
         try {
-            const response = await axios.patch(`${API_URL}/me`, userData);
+            const response = await api.patch(`${API_URL}/me`, userData);
             // Update localStorage
             localStorage.setItem('user', JSON.stringify(response.data.data.user));
             return response.data;

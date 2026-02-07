@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import io from 'socket.io-client';
-import axios from 'axios';
+import api from '../../api/axios';
 import { FaPaperPlane, FaBars, FaTimes, FaHashtag, FaUserCircle, FaInfoCircle } from 'react-icons/fa';
 import './ChatPage.css';
 
@@ -51,11 +51,11 @@ const ChatPage = () => {
         const fetchRooms = async () => {
             try {
                 // Fetch Public Rooms
-                const pubRes = await axios.get('/api/chat/rooms');
+                const pubRes = await api.get('/api/chat/rooms');
                 setPublicRooms(pubRes.data.data.rooms.filter(r => r.roomType !== 'Private'));
 
                 // Fetch My DMs
-                const privRes = await axios.get('/api/chat/rooms?mine=true&roomType=Private');
+                const privRes = await api.get('/api/chat/rooms?mine=true&roomType=Private');
                 setPrivateRooms(privRes.data.data.rooms);
 
                 setLoading(false);
@@ -91,7 +91,7 @@ const ChatPage = () => {
         // Fetch History
         const fetchMessages = async () => {
             try {
-                const res = await axios.get(`/api/chat/rooms/${activeRoom._id}/messages`);
+                const res = await api.get(`/api/chat/rooms/${activeRoom._id}/messages`);
                 setMessages(res.data.data);
                 scrollToBottom();
             } catch (err) {

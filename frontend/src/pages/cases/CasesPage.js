@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/axios';
 import { fetchCases, createCase } from '../../store/slices/caseSlice';
 import './CasesPage.css';
 
@@ -75,7 +75,7 @@ const CasesPage = () => {
         }
 
         try {
-            const response = await axios.get(`/api/users/search?email=${encodeURIComponent(email)}`);
+            const response = await api.get(`/api/users/search?email=${encodeURIComponent(email)}`);
             const user = response.data.data?.user;
 
             if (user) {

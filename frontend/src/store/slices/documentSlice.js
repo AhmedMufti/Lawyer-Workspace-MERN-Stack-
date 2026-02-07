@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import api from '../../api/axios';
 
 const API_URL = '/api/documents';
 
@@ -10,24 +10,12 @@ const initialState = {
     uploadProgress: 0
 };
 
-// Get authenticated axios instance
-const getAuthAxios = () => {
-    const token = localStorage.getItem('accessToken');
-    return axios.create({
-        baseURL: API_URL,
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-};
-
 // Fetch documents for a case
 export const fetchCaseDocuments = createAsyncThunk(
     'documents/fetchCaseDocuments',
     async (caseId, { rejectWithValue }) => {
         try {
-            const authAxios = getAuthAxios();
-            const response = await authAxios.get(`/case/${caseId}`);
+            const response = await api.get(`${API_URL}/case/${caseId}`);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -40,10 +28,8 @@ export const uploadDocument = createAsyncThunk(
     'documents/uploadDocument',
     async ({ caseId, formData }, { rejectWithValue }) => {
         try {
-            const token = localStorage.getItem('accessToken');
-            const response = await axios.post(`${API_URL}/${caseId}`, formData, {
+            const response = await api.post(`${API_URL}/${caseId}`, formData, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
                 },
                 onUploadProgress: (progressEvent) => {
@@ -63,8 +49,7 @@ export const deleteDocument = createAsyncThunk(
     'documents/deleteDocument',
     async (documentId, { rejectWithValue }) => {
         try {
-            const authAxios = getAuthAxios();
-            await authAxios.delete(`/${documentId}`);
+            await api.delete(`${API_URL}/${documentId}`);
             return documentId;
         } catch (error) {
             return rejectWithValue(error.response.data);

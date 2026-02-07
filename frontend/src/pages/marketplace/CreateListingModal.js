@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../../api/axios';
 import { FaTimes, FaCloudUploadAlt } from 'react-icons/fa';
 import './CreateListingModal.css';
 
@@ -52,7 +52,7 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
                 ...formData,
                 price: Number(formData.price)
             };
-            await axios.post('/api/marketplace/items', payload);
+            await api.post('/api/marketplace/items', payload);
             onSuccess();
             onClose();
         } catch (error) {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { fetchCases } from '../store/slices/caseSlice';
 import { fetchDashboardStats } from '../store/slices/dashboardSlice';
 import './DashboardPage.css';
@@ -30,7 +30,7 @@ const DashboardPage = () => {
     const checkLawyerProfile = async () => {
         setProfileLoading(true);
         try {
-            await axios.get('/api/marketplace/profiles/me');
+            await api.get('/api/marketplace/profiles/me');
             setHasLawyerProfile(true);
         } catch (error) {
             if (error.response?.status === 404) {
@@ -47,7 +47,7 @@ const DashboardPage = () => {
             // Generate a unique enrollment number based on user ID and timestamp
             const uniqueEnrollment = `PLN-${user._id?.slice(-6) || 'NEW'}-${Date.now().toString().slice(-4)}`;
 
-            await axios.post('/api/marketplace/profiles', {
+            await api.post('/api/marketplace/profiles', {
                 primarySpecialization: 'General Practice',
                 barCouncil: user.barAssociation || 'Pakistan Bar Council',
                 enrollmentNumber: uniqueEnrollment,

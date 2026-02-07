@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../../api/axios';
 import { FaVoteYea } from 'react-icons/fa';
 
 const PollCard = ({ poll, onVoteSuccess }) => {
     const [voting, setVoting] = useState(false);
     const [selectedOption, setSelectedOption] = useState(null);
 
-    // Check if user has voted (in a real app, this would be checked against user ID in votes array)
-    // For now, we assume if we show results, they voted. 
-    // Ideally, the backend 'poll' object should have a 'userVoted' flag or similar.
-    // Based on the controller, we don't see that flag explicitly. 
-    // We'll rely on the UI state for the session or just show buttons.
+    // ... (comments)
 
     // Calculate total votes for display
     const totalVotes = poll.totalVotes || 0;
@@ -19,10 +15,7 @@ const PollCard = ({ poll, onVoteSuccess }) => {
         setVoting(true);
         setSelectedOption(optionId);
         try {
-            const token = localStorage.getItem('token');
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-
-            await axios.post(`/api/polls/${poll._id}/vote`, { optionId }, config);
+            await api.post(`/api/polls/${poll._id}/vote`, { optionId });
             // Don't alert, just update
             if (onVoteSuccess) onVoteSuccess();
         } catch (error) {

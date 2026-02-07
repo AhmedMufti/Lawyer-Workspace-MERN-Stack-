@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/axios';
 import PollCard from './PollCard';
 import './PollCard.css';
 import { FaPoll } from 'react-icons/fa';
@@ -25,7 +25,7 @@ const PollsPage = () => {
                 status: activeTab
             };
 
-            const response = await axios.get('/api/polls', { params });
+            const response = await api.get('/api/polls', { params });
             setPolls(response.data.data.items || response.data.data);
         } catch (error) {
             console.error('Error fetching polls:', error);

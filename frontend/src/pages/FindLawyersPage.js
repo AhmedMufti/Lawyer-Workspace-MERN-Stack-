@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { FaSearch, FaMapMarkerAlt, FaStar, FaBriefcase, FaUniversity, FaPhone } from 'react-icons/fa';
 import './FindLawyersPage.css';
 
@@ -27,9 +27,9 @@ const FindLawyersPage = () => {
                     limit: 20
                 };
                 const cleanParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v));
-                response = await axios.get('/api/marketplace/profiles/search', { params: cleanParams });
+                response = await api.get('/api/marketplace/profiles/search', { params: cleanParams });
             } else {
-                response = await axios.get('/api/marketplace/profiles', { params: { limit: 20 } });
+                response = await api.get('/api/marketplace/profiles', { params: { limit: 20 } });
             }
 
             setLawyers(response.data.data.profiles || response.data.data || []);
@@ -56,7 +56,7 @@ const FindLawyersPage = () => {
             return;
         }
         try {
-            const response = await axios.post('/api/chat/rooms/dm', { targetUserId: userId });
+            const response = await api.post('/api/chat/rooms/dm', { targetUserId: userId });
             const roomId = response.data.data.room._id;
             navigate(`/dashboard/chat?roomId=${roomId}`);
         } catch (error) {

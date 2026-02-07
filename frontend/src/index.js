@@ -8,11 +8,11 @@ import './index.css';
 import App from './App';
 
 // Axios Interceptor for Token Expiry & Headers
-import axios from 'axios';
+import api from './api/axios';
 import { logoutLocal } from './store/slices/authSlice';
 
 // Add a request interceptor to attach token
-axios.interceptors.request.use(
+api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('accessToken');
         if (token) {
@@ -24,7 +24,7 @@ axios.interceptors.request.use(
 );
 
 // Add a response interceptor
-axios.interceptors.response.use(
+api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
@@ -33,7 +33,6 @@ axios.interceptors.response.use(
             // Optionally redirect to login
             // window.location.href = '/login';
         }
-        return Promise.reject(error);
         return Promise.reject(error);
     }
 );

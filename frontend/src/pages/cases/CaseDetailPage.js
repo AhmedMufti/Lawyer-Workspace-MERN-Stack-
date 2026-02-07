@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
+import api from '../../api/axios';
 import { fetchCaseById, updateCase } from '../../store/slices/caseSlice';
 import DocumentsList from './DocumentsList';
 import DocumentUploadModal from './DocumentUploadModal';
@@ -126,7 +126,7 @@ const CaseDetailPage = () => {
         setSearchResult(null);
 
         try {
-            const response = await axios.get(`/api/users/search?email=${encodeURIComponent(teamSearch)}`);
+            const response = await api.get(`/api/users/search?email=${encodeURIComponent(teamSearch)}`);
             const foundUser = response.data.data?.user;
             if (foundUser) {
                 setSearchResult(foundUser);

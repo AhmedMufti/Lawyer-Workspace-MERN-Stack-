@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import api from '../../api/axios';
 
 const API_URL = '/api/cases';
 
@@ -16,27 +16,18 @@ const initialState = {
 };
 
 // Get authenticated axios instance
-const getAuthAxios = () => {
-    const token = localStorage.getItem('accessToken');
-    return axios.create({
-        baseURL: API_URL,
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-};
+// const getAuthAxios = () => { ... } // Removed
 
 // Fetch cases
 export const fetchCases = createAsyncThunk(
     'cases/fetchCases',
     async ({ page = 1, limit = 10, status, type }, { rejectWithValue }) => {
         try {
-            const authAxios = getAuthAxios();
             const params = { page, limit };
             if (status) params.status = status;
             if (type) params.type = type;
 
-            const response = await authAxios.get('/', { params });
+            const response = await api.get(API_URL, { params });
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -49,8 +40,7 @@ export const fetchCaseById = createAsyncThunk(
     'cases/fetchCaseById',
     async (id, { rejectWithValue }) => {
         try {
-            const authAxios = getAuthAxios();
-            const response = await authAxios.get(`/${id}`);
+            const response = await api.get(`${API_URL}/${id}`);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -63,8 +53,7 @@ export const createCase = createAsyncThunk(
     'cases/createCase',
     async (caseData, { rejectWithValue }) => {
         try {
-            const authAxios = getAuthAxios();
-            const response = await authAxios.post('/', caseData);
+            const response = await api.post(API_URL, caseData);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -77,8 +66,7 @@ export const updateCase = createAsyncThunk(
     'cases/updateCase',
     async ({ id, data }, { rejectWithValue }) => {
         try {
-            const authAxios = getAuthAxios();
-            const response = await authAxios.patch(`/${id}`, data);
+            const response = await api.patch(`${API_URL}/${id}`, data);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || { message: 'Update failed' });
